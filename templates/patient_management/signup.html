@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>Patient Login</title>
+  {% load static %}
+  <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.min.css'>
+<link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Muli'>
+<link rel="stylesheet" href="{% static 'Login_style.css' %}">
+
+</head>
+<body>
+<div class="pt-5">
+  <h1 class="text-center"> New Patient Signup</h1>
+  
+{% for message in messages  %}
+  <div class="alert alert-{{message.tags}} alert-dismissible fade show" role="alert">
+    <p style="color:white;">{{message}}</p> 
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+{% endfor %}
+<div class="container">
+                <div class="row">
+                    <div class="col-md-5 mx-auto">
+                        <div class="card card-body">
+                                                    
+                            <form id="submitForm" action="/signup" method="post"><input type="hidden" name="_csrf" value="7635eb83-1f95-4b32-8788-abec2724a9a4">
+                                {% csrf_token %}
+                                <div class="form-group required">
+                                    <lSabel for="username">Enter your Patient ID</lSabel>
+                                    <input type="text" class="form-control text-lowercase" id="username" required="required" name="username" value="">
+                                </div> 
+                                <div class="form-group required">
+                                    <lSabel for="username">Enter your Name</lSabel>
+                                    <input type="text" class="form-control text-lowercase" id="fname" required="required" name="fname" value="">
+                                </div>    
+                                <div class="form-group required">
+                                    <lSabel for="username">Create a Password</lSabel>
+                                    <input type="password" class="form-control text-lowercase" id="password" required="required" name="password" value="">
+                                </div>                 
+                                <div class="form-group required">
+                                    <label class="d-flex flex-row align-items-center" for="password">Confirm Password</label>
+                                       
+                                    <input type="password" class="form-control" required="required" id="password1" name="password1" value="">
+                                </div>
+
+                                <div class="form-group required">
+                                    <lSabel for="username">Enter a recovery Email-ID</lSabel>
+                                    <input type="email" class="form-control text-lowercase" id="email" required="required" name="email" value="">
+                                </div> 
+                                <div class="form-group mt-4 mb-4">
+                                    
+                                </div>
+                                <div class="form-group pt-1">
+                                    <button class="btn btn-primary btn-block" type="submit">Sign Up</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+</div>
+  
+</body>
+</html>

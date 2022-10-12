@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>Patient Login</title>
+   {% load static %}
+  <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.min.css'>
+<link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Muli'>
+<link rel="stylesheet" href="{% static 'Login_style.css' %}">
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<div class="pt-5">
+  <h1 class="text-center"> Patient Login</h1>
+  
+  {% for message in messages  %}
+  <div class="alert alert-{{message.tags}} alert-dismissible fade show" role="alert">
+    <p style="color:white;">{{message}}</p> 
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  {% endfor %}
+<div class="container">
+                <div class="row">
+                    <div class="col-md-5 mx-auto">
+                        <div class="card card-body">
+                                                    
+                            <form id="submitForm" action="/signin" method="post" data-parsley-validate="" data-parsley-errors-messages-disabled="true" novalidate="" _lpchecked="1"><input type="hidden" name="_csrf" value="7635eb83-1f95-4b32-8788-abec2724a9a4">
+                                {% csrf_token %}
+                                <div class="form-group required">
+                                    <lSabel for="username">Patient ID</lSabel>
+                                    <input type="text" class="form-control text-lowercase" id="username" required="" name="username" value="">
+                                </div>                    
+                                <div class="form-group required">
+                                    <label class="d-flex flex-row align-items-center" for="password">Password</label>
+                                       
+                                    <input type="password" class="form-control" required="" id="password" name="password" value="">
+                                </div>
+
+                                <div class="form-group-required">
+                                    <a class="ml-auto border-link small-xl" href="/forget-password">Forgot Password?</a>
+                                </div>
+                                <div class="form-group mt-4 mb-4">
+                                    
+                                </div>
+                                <div class="form-group pt-1">
+                                    <button class="btn btn-primary btn-block" type="submit">Log In</button>
+                                </div>
+                            </form>
+                            <p class="small-xl pt-3 text-center">
+                                <span class="text-muted">New Patient?</span>
+                                <a href="/signup">Create Account</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+</div>
+<!-- partial -->
+  
+</body>
+</html>
