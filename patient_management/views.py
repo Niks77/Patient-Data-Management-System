@@ -1,7 +1,7 @@
 
 import re
 from django.shortcuts import HttpResponse, redirect, render
-from django.contrib.auth.models import User 
+from patient_management.models import User 
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
 
@@ -35,8 +35,7 @@ def signup(request):
         if not username.isalnum():
             messages.error(request, "Username must be Alpha-Numeric!!")
             return redirect('signup ')
-        myuser = User.objects.create_user(username,email,password)
-        myuser.first_name = fname
+        myuser = User.objects.create_user(username,fname,email,password)
         myuser.save()
         messages.success(request, "Your account has been created successfully")
         return redirect('signin')
@@ -53,7 +52,7 @@ def signin(request):
             login(request, user)
             return render(request, "patient_management/index.html")
         else :
-            messages.success(request, "Wrong username/ password")
+            messages.error(request, "Wrong username/ password")
             return redirect('home')
         return redirect('signin')
     return render(request,"patient_management/Login.html")
