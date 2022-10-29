@@ -1,0 +1,21 @@
+{% if type == "Patient" %}
+<div class="form-group required">
+    <div class="mb-3">
+        <label for="identity" class="form-label">Identity Proof</label>
+        <input class="form-control" type="file" id="identity">
+    </div>
+</div>
+{% endif %}
+
+{% if type == "Healthcare Professional" %}
+<div class="form-group required">
+    <div class="mb-3">
+        <label for="identity" class="form-label">Identity Proof</label>
+        <input class="form-control" type="file" id="identity">
+    </div>
+    <div class="mb-3">
+        <label for="license" class="form-label">Doctor license</label>
+        <input class="form-control" type="file" id="license">
+    </div>
+</div>
+{% endif %}

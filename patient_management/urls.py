@@ -11,6 +11,8 @@ urlpatterns = [
     path('signin',views.signin, name="signin"),
     path('signout',views.signout, name="signout"),
 
+    path('ajax/load-dropdown/', views.load_dropdown, name='ajax_load_dropdown'),
+
 ]
 if settings.DEBUG:
         urlpatterns += static(settings.MEDIA_URL,
