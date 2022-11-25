@@ -1,4 +1,6 @@
-$('#type').change(function () {           
+$('#type').change(changeFileUpload);
+
+function changeFileUpload() { 
   const url = $("#submitForm").attr("data-dropdown-url");
   const val = $(this).val()
   $.ajax({                  
@@ -11,4 +13,8 @@ $('#type').change(function () {
         
     }
   });
+}
+$('#type').find('option[selected="selected"]').each(function(){
+  $(this).prop('selected', true);
 });
+

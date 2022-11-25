@@ -14,6 +14,7 @@ import os
 from pathlib import Path
 from django.contrib.messages import constants as messages
 from datetime import timedelta
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -28,8 +29,10 @@ SECRET_KEY = 'django-insecure-iuvqqf%4_iywy-f-&+^jzulehvtauyfq2361ae*w-e_-!k^_)b
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['0.0.0.0','127.0.0.1']
 
+
+# AUTHENTICATION_BACKENDS = ('patient_management.authentication.CustomAuthentication',)
 
 AUTH_USER_MODEL = "patient_management.User"
 # Application definition
@@ -42,13 +45,16 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'corsheaders'
-    'rest_framework'
+    'corsheaders',
+    'rest_framework',
+    'paypal.standard.ipn',
+    'captcha',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -80,13 +86,24 @@ WSGI_APPLICATION = 'fcs_project.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'fcsproject',
+#         'USER': 'fcs',
+#         'PASSWORD': str(config('DATABASE_PASS')),
+#         'HOST':'localhost',
+#         'PORT':'3306',
+#     }
+# }
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
+        'NAME': 'db.sqlite3',                      # Or path to database file if using sqlite3.
+                        # Set to empty string for default. Not used with sqlite3.
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
@@ -147,6 +164,8 @@ MEDIA_ROOT =  os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
 
+RECAPTCHA_DOMAIN = 'www.recaptcha.net'
+
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
@@ -178,3 +197,26 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_LIFETIME': timedelta(minutes=5),
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
 }
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+]
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = "fcs.patient.iiitd@gmail.com"
+EMAIL_HOST_PASSWORD = "tntmyhbvmelqmekg"
+EMAIL_PORT = 587
+
+
+RECAPTCHA_PUBLIC_KEY = str(config('RECAPTCHA_PUBLIC_KEY'))
+RECAPTCHA_PRIVATE_KEY = str(config('RECAPTCHA_PRIVATE_KEY'))
+
+EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'apps', 'emails')
+
+
+PAYPAL_RECEIVER_EMAIL = 'patient_iiitd@gmail.com'
+
+PAYPAL_TEST = True

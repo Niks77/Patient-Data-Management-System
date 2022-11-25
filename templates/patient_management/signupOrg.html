@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>Patient Login</title>
+  {% load static %}
+<link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.min.css'>
+<link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Muli'>
+<link rel="stylesheet" href="{% static 'Login_style.css' %}">
+
+</head>
+<body>
+<div class="pt-5">
+  <h1 class="text-center"> New Patient Signup</h1>
+  
+{% for message in messages  %}
+  <div class="alert {{message.tags}} alert-dismissible fade show" role="alert">
+     {{message}}
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+   
+  </div>
+{% endfor %}
+<div class="container">
+                <div class="row">
+                    <div class="col-md-5 mx-auto">
+                        <div class="card card-body">
+                                                    
+                            <form id="submitForm" action="/signupOrg" method="post" enctype="multipart/form-data" data-dropdown-url="{% url 'ajax_load_dropdown' %}"><input type="hidden" name="_csrf" value="7635eb83-1f95-4b32-8788-abec2724a9a4">
+                                {% csrf_token %}
+                                <div class="form-group required">
+                                    <label for="username">Enter your Organization username</label>
+                                    <input type="text" class="form-control text-lowercase" id="username" required="required" name="username" value="">
+                                </div> 
+
+                                 <div class="form-group required">
+                                    <label for="name">Enter your Organization Name</label>
+                                    <input type="text" class="form-control text-lowercase" id="name" required="required" name="name" value="">
+                                </div> 
+                                <div class="form-group required">
+                                    <label for="description">Enter Description</label>
+                                    <input type="text" class="form-control text-lowercase" id="description" required="required" name="description" value="">
+                                </div>    
+                                <div class="form-group required">
+                                    <label for="password">Create a Password</label>
+                                    <input type="password" class="form-control text-lowercase" id="password" required="required" name="password" value="">
+                                </div>                 
+                                <div class="form-group required">
+                                    <label class="d-flex flex-row align-items-center" for="password">Confirm Password</label>
+                                       
+                                    <input type="password" class="form-control" required="required" id="password1" name="password1" value="">
+                                </div>
+
+                                <div class="form-group required">
+                                    <label for="location">Enter a location</label>
+                                    <input type="text" class="form-control text-lowercase" id="location" required="required" name="location" value="">
+                                </div> 
+
+                                <div class="form-group required">
+                                    <label for="contactDetails">Enter a contact details</label>
+                                    <input type="text" class="form-control text-lowercase" id="contactDetails" required="required" name="contactDetails " value="">
+                                </div> 
+                                <div class="form-group required">
+                                    <select class="form-control" id="type" name="type">
+                                        <option value = "pharmacy">Patient</option>
+                                        <option value = "hospital">Hospital</option>
+                                        <option value = "insurance firms">Insurance Firms</option>
+                                        <option value = "none" selected disabled>Selected Type of Organization</option>
+                                    </select>
+                                </div>
+                                <div class="form-group required">
+                                    <div class="mb-3">
+                                        <label for="image1" class="form-label">Image 1</label>
+                                        <input class="form-control" type="file" id="image1" name="image1">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="image2" class="form-label">Image 2</label>
+                                        <input class="form-control" type="file" id="image2"name="image2" >
+                                    </div>
+                                </div>
+                                <div class="form-group mt-4 mb-4">
+                                    
+                                </div>
+                                <div class="form-group pt-1">
+                                    <button class="btn btn-primary btn-block" type="submit">Sign Up</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+
+</body>
+</html>
