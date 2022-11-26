@@ -210,11 +210,17 @@ background: rgba(0, 0, 0, 0.6);
                     </div>
                     <div class="thumb-content">
                         <h4>{{ file.title }}</h4>
-                        <p class="item-price"> <span>{{file.description}}</span></p>
-                        <form id="submitForm" action="/verify" method="post" ><input type="hidden" name="_csrf" value="7635eb83-1f95-4b32-8788-abec2724a9a4">
-                        {% csrf_token %}
-                        <input type="hidden" name="file" value={{file.pk}} />
-                        <button class="btn btn-primary" type="submit">Verify</button>
+                        {% if file.verified == False %}
+
+                          <p class="item-price"> <span>{{file.description}}</span></p>
+                          <form id="submitForm" action="/verify" method="post" ><input type="hidden" name="_csrf" value="7635eb83-1f95-4b32-8788-abec2724a9a4">
+                          {% csrf_token %}
+                          <input type="hidden" name="file" value={{file.pk}} />
+                          <button class="btn btn-primary" type="submit">Verify</button>
+                        {% endif %}
+                        {% if file.verified == True %}
+                          verified
+                        {% endif %}
                         
                       </form>
                       <form id="submitForm" action="/delete" method="post" ><input type="hidden" name="_csrf" value="7635eb83-1f95-4b32-8788-abec2724a9a4">

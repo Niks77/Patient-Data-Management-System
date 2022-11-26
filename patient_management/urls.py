@@ -32,7 +32,8 @@ urlpatterns = [
     path('payment-cancelled/', views.payment_canceled, name='payment_cancelled'),
     path('forgot_password', views.forgotpassword, name='forgot'),
     path('sharefile', views.sharefile,name='sharefile'),
-    path('removeshare',views.removeshare,name='removeshare')
+    path('removeshare',views.removeshare,name='removeshare'),
+    path('sharefilehospital',views.upload_files_by_hospital,name='sharefilehospital')
 
 ]
 if settings.DEBUG:

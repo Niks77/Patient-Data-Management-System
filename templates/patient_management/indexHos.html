@@ -193,11 +193,38 @@ background: rgba(0, 0, 0, 0.6);
     {{message}}
   </div>
 {% endfor %}
-<h1>Pharmacy <b>Store</b></h1>
+<h1>Share File with <b>Customer</b></h1>
 <div id="myCarousel" class="carousel slide" data-ride="carousel" data-interval="0">
+
+<form id="submitForm" action="/sharefilehospital" method="post" enctype="multipart/form-data" data-parsley-validate="" data-parsley-errors-messages-disabled="true" novalidate="" _lpchecked="1" ><input type="hidden" name="_csrf" value="7635eb83-1f95-4b32-8788-abec2724a9a4">
+                                {% csrf_token %}
+                                <div class="form-group required">
+                                    <label for="title">Title</label>
+                                    <input type="text" class="form-control text-lowercase" id="title" required="required" name="title" value="">
+                                </div>                    
+                                <div class="form-group required">
+                                    <label class="d-flex flex-row align-items-center" for="description">Description</label>
+                                       
+                                    <input type="text" class="form-control" required="" id="description" name="description" value="">
+                                </div>
+                                   <div class="form-group required">
+                                    <label class="d-flex flex-row align-items-center" for="share_username">share username</label>
+                                       
+                                    <input type="text" class="form-control" required="" id="share_username" name="share_username" value="">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="docs" class="form-label">Upload file</label>
+                                    <input class="form-control" type="file" id="docs" name="docs" >
+                                  </div>
+                                
+                                <div class="form-group pt-1">
+                                    <button class="btn btn-primary btn-block" type="submit">Submit</button>
+                                </div>
+                            </form>
 <!-- Carousel indicators --> 
 <!-- Wrapper for carousel items -->
-<div class="carousel-inner">
+{% comment %} <div class="carousel-inner">
     <div class="carousel-item active">
         <div class="row">
             {% for product in all_products %}
@@ -217,7 +244,7 @@ background: rgba(0, 0, 0, 0.6);
         </div>
     </div>
 
-</div>
+</div> {% endcomment %}
 </div>
 </div>
 </div>

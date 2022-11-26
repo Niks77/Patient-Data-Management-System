@@ -2,7 +2,7 @@
 from django.db import models
 from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager)
 from datetime import datetime, timezone
-
+from .validator import validate_file_size
 # Create your models here.
 
 
@@ -40,6 +40,7 @@ class UserManager(BaseUserManager):
         else:#default 
             org.type = 'r'
         org.isUser = False
+        org.is_active = True
         org.set_password(password)
         org.description = description
         org.location = location
@@ -154,23 +155,23 @@ class File(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=250)
     description = models.TextField(blank=True, null=True)
-    file_path = models.FileField(upload_to='documents/',blank=True, null=True)
+    file_path = models.FileField(upload_to='documents/',blank=True, null=True,validators=[validate_file_size])
     date_created = models.DateTimeField(default=datetime.now)
     date_updated = models.DateTimeField(auto_now=True)
     share = models.ManyToManyField('User',blank=True,related_name="SharedUsers")
     verified = models.BooleanField(default=False)
-    cipher = models.FileField(upload_to='documents/', blank = True, null = True)
+    cipher = models.FileField(upload_to='documents/', blank = True, null = True,validators=[validate_file_size])
     def __str__(self):
         return self.user.username + '-' + self.title
 
 class HCPDocument(models.Model):
     user = models.ForeignKey('User',on_delete = models.CASCADE)
-    identity_proof = models.FileField(upload_to='documents/') 
-    license_proof = models.FileField(upload_to='documents/')
+    identity_proof = models.FileField(upload_to='documents/',validators=[validate_file_size]) 
+    license_proof = models.FileField(upload_to='documents/',validators=[validate_file_size])
 
 class PDocument(models.Model):
     user = models.ForeignKey('User',on_delete = models.CASCADE)
-    identity_proof = models.FileField(upload_to='documents/') 
+    identity_proof = models.FileField(upload_to='documents/',validators=[validate_file_size]) 
 
 
 # class Organization(AbstractBaseUser):
@@ -201,7 +202,7 @@ class PDocument(models.Model):
 
 class OrganizationImage(models.Model):
     organization = models.ForeignKey('User',on_delete = models.CASCADE)
-    image = models.ImageField(upload_to='images/') 
+    image = models.ImageField(upload_to='images/',validators=[validate_file_size]) 
 
 
 class CartItem(models.Model):

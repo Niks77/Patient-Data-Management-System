@@ -16,6 +16,7 @@ from paypal.standard.forms import PayPalPaymentsForm
 from .forms import CartForm, CheckoutForm, FormWithCaptcha
 from . import cart
 import requests
+from django.core.files import File as file
 from decimal import Decimal
 from patient_management.certificate import (verifyfile, generate_key) 
 from . tokens import generate_token
@@ -97,12 +98,14 @@ def signupOrg(request):
 def home(request):
     all_products = Product.objects.all()
     current_site = get_current_site(request)
+
     # file = File.objects.get(pk=3)
     # print(verifyfile(file.cipher,request.user,file.file_path))
     return render(request,"patient_management/Productcard.html",{
                                     'all_products': all_products,
                                     'urls' : current_site
                                     })
+
 
 def signup(request):
     if request.method == "POST":
@@ -549,7 +552,9 @@ def verify(request) :
                     messages.error(request,"File is missing or wrong request")
                     return redirect('verify')
                 else:
-                    if verifyfile(file.cipher,user,file.file_path):
+                    if verifyfile(file.cipher,user.username,file.file_path):
+                        file.verified = True
+                        file.save()
                         messages.success(request, "File is verified")
                         return redirect('verify')
 
@@ -618,8 +623,10 @@ def sharefile(request):
                         messages.error(request,"File key doesnt exists")
                         return redirect('your_docs')
                     try:
-                        # print(filepk)
+                        
                         fileObj = File.objects.get(pk=filepk)
+                        print(filepk)
+                        print(fileObj)
                     except:
                         fileObj = None
                     if fileObj is None:
@@ -674,6 +681,70 @@ def sharefile(request):
     return HttpResponse("Not allowed")
     # print(request.user)
      
+
+
+@login_required(login_url='signin')
+def upload_files_by_hospital(request):
+    if request.method == "POST":
+        if request.user == None:
+            messages.error(request, "Session expired")
+            return redirect('signin')
+        else:  
+            user = request.user       
+            if user == None:
+                messages.error(request, "Session expired")
+                return redirect('signin')
+            elif user.type != 't':
+                return HttpResponse("Unauthorized access")
+            else:
+                title = request.POST.get('title')
+                description = request.POST.get('description')
+                try:
+                    file_path = request.FILES['docs']
+                except:
+                    file_path = None
+
+                share_username = request.POST.get('share_username')
+                try:
+                    share_user = User.objects.get(username = share_username)
+                except:
+                    share_user = None
+                # print(share_user)
+                if share_user is None:
+                    messages.error(request,"User doesnt exists")
+                    return redirect('sharefilehospital')
+                if share_username == user.username:
+                    messages.error(request,"You cannot share with yourself")
+                    return redirect('sharefilehospital')
+                if title is None:
+                    messages.error(request,"title is required")
+                    return redirect('sharefilehospital')
+                if description is None:
+                    messages.error(request,"description is required")
+                    return redirect('sharefilehospital')
+                if file_path is None:
+                    messages.error(request,"file is needed to be upload")
+                    return redirect('sharefilehospital')
+                if share_user.banned:
+                    messages.error(request,"share user is banned")
+                    return redirect('sharefilehospital')
+                if not share_user.approved:
+                    messages.error(request,"share user is not approved to use platform")
+                    return redirect('sharefilehospital')
+                fileObj = File(user=share_user,title=title,description=description,file_path=file_path)
+                fileObj.save()
+                cipherpath = generate_key(share_username,fileObj.file_path.path)
+                print(cipherpath)
+                if cipherpath != None:
+                    cipherfile = open(cipherpath)
+                    djangocipherfile = file(cipherfile)
+                    fileObj.cipher.save('new', djangocipherfile)
+                    cipherfile.close()
+                    fileObj.save()
+                
+                messages.success(request,"files has successfully shared with user:" + str(share_user.username))
+                return redirect('upload')
+    return  render(request,"patient_management/indexHos.html")   
 
 @login_required(login_url='signin')
 def upload_files(request):

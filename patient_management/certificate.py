@@ -1,7 +1,9 @@
 from decouple import config
 from fcs_project import settings
 import gmpy2
+from datetime import datetime
 from gmpy2 import mpz
+from django.core.files import File
 import re
 import os
 import hashlib
@@ -21,7 +23,7 @@ def encrypt(hash):
   
     s = []
     for i in hash.encode():
-        s.append(gmpy2.powmod(i, e, n))
+        s.append(gmpy2.powmod(i, int(e), int(n)))
     
     return s
 
@@ -34,8 +36,6 @@ def verifyfile(cipher, username,fileverify):
         return False
     
     s = ''
-    print(cipher.path)
-    print(fileverify.path)
     try:
         
         with open(cipher.path, "r") as f:
@@ -44,15 +44,14 @@ def verifyfile(cipher, username,fileverify):
     except:
         return False
     
-    print("hii")
     hash = decrypt(stringToMPZ(s))
-    print(hash)
+
   
     sha256_hash = hashlib.sha256()
     try:
 
         with open(fileverify.path,"rb") as f:
-            print("hii")
+            print(username)
             for byte_block in iter(lambda: f.read(4096),b""):
                 if byte_block is not None:
                     sha256_hash.update(byte_block)
@@ -65,14 +64,27 @@ def verifyfile(cipher, username,fileverify):
 
 def generate_key(username,file_path):
     sha256_hash = hashlib.sha256()
-    try:
-        with open(file_path,"rb") as f:
-            for byte_block in iter(lambda: f.read(4096),b""):
-                if byte_block is not None:
-                    sha256_hash.update(byte_block)
-            new_hash = sha256_hash.hexdigest()
-            return encrypt(username + str(new_hash))
-    except:
-        pass
+    # try:
+    with open(file_path,"rb") as f:
+        for byte_block in iter(lambda: f.read(4096),b""):
+            if byte_block is not None:
+                sha256_hash.update(byte_block)
+        new_hash = sha256_hash.hexdigest()
+        store =  str(encrypt(username + str(new_hash)))
+        path = os.path.join(settings.MEDIA_ROOT, 'documents')
+        path = os.path.join(path,'key_'+str(datetime.now()))
+        # try:
+        with open(path, 'w') as f:
+            myfile = File(f)
+            myfile.write(store)
+            myfile.close()
+            f.close()
+            return path
+        # except:
+        #     pass
+
+
+    # except:
+    #     pass
 
         
