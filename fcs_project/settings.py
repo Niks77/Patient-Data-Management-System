@@ -32,7 +32,7 @@ DEBUG = True
 ALLOWED_HOSTS = ['0.0.0.0','127.0.0.1']
 
 
-# AUTHENTICATION_BACKENDS = ('patient_management.authentication.CustomAuthentication',)
+AUTHENTICATION_BACKENDS = ('patient_management.authentication.CustomAuthentication',)
 
 AUTH_USER_MODEL = "patient_management.User"
 # Application definition

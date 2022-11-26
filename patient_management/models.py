@@ -9,46 +9,45 @@ from datetime import datetime, timezone
 
 class UserManager(BaseUserManager):
 
-    # def create_org(self,username,name,description,location,contactDetails,password, type=None):
-    #     if not username:
-    #         raise ValueError("Org must have an username")
-    #     if not description:
-    #         raise ValueError("Org must have a description")
-    #     if not location:
-    #         raise ValueError("Org must have a location")
-    #     if not contactDetails:
-    #         raise ValueError("Org must have a contactDetails")
-    #     if not type:
-    #         raise ValueError("Org must have a type")
+    def create_org(self,username,name,description,location,contactDetails,password, type=None):
+        if not username:
+            raise ValueError("Org must have an username")
+        if not description:
+            raise ValueError("Org must have a description")
+        if not location:
+            raise ValueError("Org must have a location")
+        if not contactDetails:
+            raise ValueError("Org must have a contactDetails")
+        
 
 
-    #     if not name:
-    #         raise ValueError("Org must have a name")
-    #     if not password:
-    #         raise ValueError("Org must have a password")
+        if not name:
+            raise ValueError("Org must have a name")
+        if not password:
+            raise ValueError("Org must have a password")
 
     
-    #     org = self.model(
-    #         username=username,
-    #         orgName=name
-    #         )
-    #     if type == "pharmacy":
-    #         org.type = 'r'
-    #     elif type == "hospital":
-    #         org.type = 't'
-    #     elif type == "insurance firms":
-    #         org.type = 'i'
-    #     else:#default 
-    #         org.type = 'r'
-    #     org.isUser = False
-    #     org.set_password(password)
-    #     org.description = description
-    #     org.location = location
-    #     org.contactDetails = contactDetails
+        org = self.model(
+            username=username,
+            orgName=name
+            )
+        if type == "pharmacy":
+            org.type = 'r'
+        elif type == "hospital":
+            org.type = 't'
+        elif type == "insurance firms":
+            org.type = 'i'
+        else:#default 
+            org.type = 'r'
+        org.isUser = False
+        org.set_password(password)
+        org.description = description
+        org.location = location
+        org.contactDetails = contactDetails
     
-    #     # user = self.create(username = username, name = name, email = email, password = password)
-    #     org.save(using=self._db)
-    #     return org
+        # user = self.create(username = username, name = name, email = email, password = password)
+        org.save(using=self._db)
+        return org
 
     def create_user(self,username,name,email,password,type=None):
         if not email:
@@ -88,8 +87,10 @@ class UserManager(BaseUserManager):
             username = username,
             name = name ,
             password=password)
+
         user.name = name
         user.approved = True
+        user.is_active = True
         user.is_admin = True
         user.is_staff = True
         user.is_superuser = True 
@@ -109,8 +110,8 @@ class User(AbstractBaseUser):
     )
     username = models.CharField(max_length = 50, unique = True,primary_key = True)
     name = models.CharField(max_length = 150)
-    # orgName = models.CharField(max_length = 150,blank=True, null=True)
-    email = models.EmailField(max_length = 100, unique = True)
+    orgName = models.CharField(max_length = 150,blank=True, null=True)
+    email = models.EmailField(max_length = 100,blank=True,null=True)
     password = models.CharField(max_length = 100)
     is_admin = models.BooleanField(default = False)
     is_staff = models.BooleanField(default = False)
@@ -120,9 +121,9 @@ class User(AbstractBaseUser):
     approved = models.BooleanField(default = False)
     isUser = models.BooleanField(default=True)
     type = models.CharField(max_length = 1, choices = TYPE_OF_USER, default = 'p')
-    # description = models.CharField(max_length = 1000, blank=True, null=True)
-    # location = models.CharField(max_length = 250, blank=True, null=True)
-    # contactDetails = models.CharField(max_length = 10, blank=True, null=True)
+    description = models.CharField(max_length = 1000, blank=True, null=True)
+    location = models.CharField(max_length = 250, blank=True, null=True)
+    contactDetails = models.CharField(max_length = 10, blank=True, null=True)
     objects = UserManager()
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email','password','name']

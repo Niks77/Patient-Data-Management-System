@@ -57,7 +57,7 @@ def signupOrg(request):
             messages.error(request, "Organization username already exist! Please try some other username.")
             return redirect('signupOrg')
         if User.objects.filter(orgName=name):
-            messages.error(request, "Organization name already exist! Please try some other username.")
+            messages.error(request, "Organization name already exist! Please try some other name.")
             return redirect('signupOrg')
         if type == None:
             messages.error(request, "Please select organization type")
@@ -78,7 +78,7 @@ def signupOrg(request):
         if not username.isalnum():
             messages.error(request, "Organization must be Alpha-Numeric!!")
             return redirect('signupOrg')
-        myuser = User.objects.create_org(username,description,location,contactDetails,password,type)
+        myuser = User.objects.create_org(username,name,description,location,contactDetails,password,type)
         # if(type == "pharmacy"):
         try:
             doc = OrganizationImage(organization=myuser,image=image1)
@@ -89,6 +89,7 @@ def signupOrg(request):
             myuser.delete()
             messages.error(request, "Unknown error occured")
             return redirect('signupOrg')
+        messages.success(request, "Your Account has been created succesfully")
         return redirect('signin')
     return render(request,"patient_management/signupOrg.html")
 
@@ -96,8 +97,8 @@ def signupOrg(request):
 def home(request):
     all_products = Product.objects.all()
     current_site = get_current_site(request)
-    file = File.objects.get(pk=3)
-    print(verifyfile(file.cipher,request.user,file.file_path))
+    # file = File.objects.get(pk=3)
+    # print(verifyfile(file.cipher,request.user,file.file_path))
     return render(request,"patient_management/Productcard.html",{
                                     'all_products': all_products,
                                     'urls' : current_site
@@ -311,7 +312,7 @@ def reset(request,username,token):
                     user.set_password(new_password)
                     user.save()
                     messages.success(request, "Password has been successfully changed")
-                    return redirect('/')
+                    return redirect('home')
     try:
         myuser = User.objects.get(username = username)
     except (TypeError,ValueError,OverflowError,User.DoesNotExist):
@@ -616,9 +617,9 @@ def signin(request):
             return redirect('signin') 
         password = request.POST.get('password')
         username = request.POST.get('username')
-        print(password + " "+ username)
+        # print(password + " "+ username)
         user = authenticate(username=username, password = password)
-        print(user)
+        # print(user)
         if user is None:
             messages.error(request, "Wrong username / password")
             return redirect('signin')
