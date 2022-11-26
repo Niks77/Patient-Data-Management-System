@@ -10,6 +10,7 @@ urlpatterns = [
     path('signup',views.signup, name="signup"),
     path('signupOrg',views.signupOrg, name="signupOrg"),
     path('signin',views.signin, name="signin"),
+    path('signinOrg',views.signin, name="signin"),
     path('signout',views.signout, name="signout"),
     path('changepassword',views.change_password, name="change_password"),
     path('ajax/load-dropdown/', views.load_dropdown, name='ajax_load_dropdown'),
@@ -30,7 +31,8 @@ urlpatterns = [
     path('payment-done/', views.payment_done, name='payment_done'),
     path('payment-cancelled/', views.payment_canceled, name='payment_cancelled'),
     path('forgot_password', views.forgotpassword, name='forgot'),
-    path('sharefile', views.sharefile,name='sharefile')
+    path('sharefile', views.sharefile,name='sharefile'),
+    path('removeshare',views.removeshare,name='removeshare')
 
 ]
 if settings.DEBUG:

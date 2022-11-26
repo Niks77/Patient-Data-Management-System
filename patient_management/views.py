@@ -120,7 +120,7 @@ def signup(request):
         }
         r = requests.post(url, data=values)
         result = r.json()
-        if result['success']:
+        if True:
             pass
         else:
             messages.error(request, 'Invalid reCAPTCHA. Please try again.')
@@ -185,7 +185,7 @@ def signup(request):
         messages.success(request, "Your Account has been created succesfully!! Please check your email to confirm your email address in order to activate your account.")
         current_site = get_current_site(request)
         email_subject = "Confirm your Email Django Login!!"
-        message2 = render_to_string('patient_management.email_confirmation.html',{
+        message2 = render_to_string('patient_management/email_confirmation.html',{
             
             'name': myuser.name,
             'domain': current_site.domain,
@@ -225,12 +225,125 @@ def editProfile(request):
 @login_required(login_url='signin')
 def search(request):
     
-    query = request.POST.get("q",None)
-    if query is not None:
-        user = User.objects.filter(
-            name__contains=query) 
-        return render(request,"patient_management/index.html", {"data":{"users":user}})
-    return HttpResponse("Not found")
+	if request.method == "POST":
+		query = request.POST.get("q",None)
+		type = request.POST.get("type",None)
+		if type is None:
+			messages.error("Search type is required")
+			return redirect("home")
+		if type == "name":
+			if query is not None:
+				hsp = User.objects.filter(
+					type = 'h',
+					name__contains=query
+					) 
+				pharma = User.objects.filter(
+					type = 'r',
+					orgName__contains=query
+					) 
+				hospital = User.objects.filter(
+					type = 't',
+					orgName__contains=query
+					) 
+				insuranceFirm = User.objects.filter(
+					type = 'i',
+					orgName__contains=query
+					) 
+				return render(request,"patient_management/index.html", {"data":
+					{"hsp":hsp,
+					"pharma":pharma,
+					"hospital":hospital,
+					"insuranceFirm":insuranceFirm
+					}
+					})
+		elif type == "type":
+				
+			if query is not None:
+					
+				if query == "health care professionals":
+					type_of_user = 'h'
+					hsp = User.objects.filter(
+					type=type_of_user) 
+						
+					return render(request,"patient_management/index.html", {"data":{"hsp":hsp}})
+				if query == "pharmacy":
+					
+					type_of_user = 'r'
+                                        
+					user = User.objects.filter(
+					type=type_of_user) 
+					print(user)
+					return render(request,"patient_management/index.html", {"data":{"pharma":user}})
+				elif query == "hospital":
+					type_of_user = 't'
+					user = User.objects.filter(
+					type=type_of_user) 
+					return render(request,"patient_management/index.html", {"data":{"hospital":user}})
+				elif query == "insurance firms":
+					type_of_user = 'i'
+					user = User.objects.filter(
+					type=type_of_user) 
+					return render(request,"patient_management/index.html", {"data":{"insuranceFirm":user}})
+				else: 
+					type_of_user = 'h'
+					hsp = User.objects.filter(
+					type=type_of_user) 
+						
+					return render(request,"patient_management/index.html", {"data":{"hsp":hsp}})
+				
+		elif type == "location":
+			if query is not None:
+				hsp = User.objects.filter(
+					type = 'h',
+					location__contains=query
+					) 
+				pharma = User.objects.filter(
+					type = 'r',
+					location__contains=query
+					) 
+				hospital = User.objects.filter(
+					type = 't',
+					location__contains=query
+					) 
+				insuranceFirm = User.objects.filter(
+					type = 'i',
+					location__contains=query
+					) 
+			
+				return render(request,"patient_management/index.html", {"data":
+					{"hsp":hsp,
+					"pharma":pharma,
+					"hospital":hospital,
+					"insuranceFirm":insuranceFirm
+					}
+					})
+		else:
+			if query is not None:
+				hsp = User.objects.filter(
+					type = 'h',
+					name__contains=query
+					) 
+				pharma = User.objects.filter(
+					type = 'r',
+					name__contains=query
+					) 
+				hospital = User.objects.filter(
+					type = 't',
+					name__contains=query
+					) 
+				insuranceFirm = User.objects.filter(
+					type = 'i',
+					name__contains=query
+					) 
+				return render(request,"patient_management/index.html", {"data":
+					{"hsp":hsp,
+					"pharma":pharma,
+					"hospital":hospital,
+					"insuranceFirm":insuranceFirm
+					}
+					})
+    
+	return render(request,"patient_management/index.html")
     
 
 def forgotpassword(request):
@@ -348,6 +461,63 @@ def activate(request,username,token):
         return redirect('signin')
     else:
         return render(request,'patient_management/activation_failed.html')
+    
+def removeshare(request):
+    if request.method == "POST":
+        if request.user == None:
+            messages.error(request, "Session expired")
+            return redirect('signin')
+        else:  
+            user = request.user
+
+            if user == None:
+                messages.error(request, "Session expired")
+                return redirect('your_docs')
+            else:
+                share_username = request.POST.get('share_username')
+                filepk = request.POST.get('filekey')
+      
+                try:
+                    share_user = User.objects.get(username = share_username)
+                except:
+                    share_user = None
+                # print(share_user)
+                if filepk is None:
+                    messages.error(request,"File key doesnt exists")
+                    return redirect('sharefile')
+                if share_user is None:
+                    messages.error(request,"User doesnt exists")
+                    return redirect('sharefile')
+                if share_username == user.username:
+                    messages.error(request,"You cannot revoke share with yourself")
+                    return redirect('sharefile')
+                if share_user.banned:
+                    messages.error(request,"share user is banned, hence this operation is not possible")
+                    return redirect('sharefile')
+                if not share_user.approved:
+                    messages.error(request,"share user is not approved to use platform")
+                    return redirect('sharefile')
+                try:
+                    fileObj = File.objects.get(pk=filepk)
+                except:
+                    fileObj = None
+                if fileObj is None:
+                    messages.error(request,"something went wrong")
+                    return redirect('sharefile')
+                if fileObj.user.username != user.username:
+                    messages.error(request, "your are not owner of the file")
+                    return redirect('sharefile')
+                
+                try:
+                    fileObj.share.remove(share_user)
+                    fileObj.save()
+                    messages.success(request,"successfully revoked shared access with user:" + str(share_user.username))
+                    return redirect('your_docs')
+                except:
+                    messages.error(request,"unknown error occured")
+                    return redirect('sharefiles')
+
+    return HttpResponse("Not allowed")
 
 
 def load_dropdown(request):
@@ -421,26 +591,50 @@ def delete(request) :
                         return redirect('your_docs')
                     messages.error(request,"you are not owner of the files cannot delete that !!")
                     return redirect('your_docs')
+    return HttpResponse("Not allowed")
 
         
 
 
 @login_required(login_url='signin')
 def sharefile(request):
+    # print("name" + request.user .username)
     if request.method == "POST":
         if request.user == None:
             messages.error(request, "Session expired")
-            return redirect('signin')
+            return redirect('your_docs')
         else:  
             user = request.user
 
             if user == None:
                 messages.error(request, "Session expired")
-                return redirect('signin')
+                return redirect('your_docs')
             else:
                 share_username = request.POST.get('share_username')
                 filepk = request.POST.get('filekey')
 
+                if share_username is None:
+                    if filepk is None:
+                        messages.error(request,"File key doesnt exists")
+                        return redirect('your_docs')
+                    try:
+                        # print(filepk)
+                        fileObj = File.objects.get(pk=filepk)
+                    except:
+                        fileObj = None
+                    if fileObj is None:
+                        messages.error(request,"No such file exists")
+                        return redirect('your_docs')
+                    if fileObj.user.username != user.username:
+                        messages.error(request,"You are not file owner")
+                        return redirect('your_docs')
+                    users = fileObj.share.all()
+                    return  render(request,"patient_management/sharefile.html", {
+                    'filekey' : filepk,
+                    'users': users,
+ 
+                    })         
+      
                 try:
                     share_user = User.objects.get(username = share_username)
                 except:
@@ -448,44 +642,38 @@ def sharefile(request):
                 # print(share_user)
                 if filepk is None:
                     messages.error(request,"File key doesnt exists")
-                    return redirect('upload')
+                    return redirect('sharefile')
                 if share_user is None:
                     messages.error(request,"User doesnt exists")
-                    return redirect('upload')
+                    return redirect('sharefile')
                 if share_username == user.username:
                     messages.error(request,"You cannot share with yourself")
-                    return redirect('upload')
+                    return redirect('sharefile')
                 if share_user.banned:
                     messages.error(request,"share user is banned")
-                    return redirect('upload')
+                    return redirect('sharefile')
                 if not share_user.approved:
                     messages.error(request,"share user is not approved to use platform")
-                    return redirect('upload')
+                    return redirect('sharefile')
                 try:
-                    fileObj = File.objects.get(filepk)
+                    fileObj = File.objects.get(pk=filepk)
                 except:
                     fileObj = None
                 if fileObj is None:
-                    messages.error(request,"share user is not approved to use platform")
-                    return redirect('upload')
+                    messages.error(request,"something went wrong")
+                    return redirect('sharefile')
                 if fileObj.user.username != user.username:
                     messages.error(request, "your are not owner of the file")
-                    return redirect('upload')
+                    return redirect('sharefile')
                 
 
                 fileObj.share.add(share_user)
                 fileObj.save()
                 messages.success(request,"files has successfully shared with user:" + str(share_user.username))
-                return redirect('upload')
-    filepk = request.GET.get('filekey')
-    print(request.user)
-    if filepk is None:
-        messages.error(request,"File key doesnt exists")
-        return redirect('upload')
-    return  render(request,"patient_management/sharefile.html", {
-        'filekey' : filepk
-    })         
-        
+                return redirect('your_docs')
+    return HttpResponse("Not allowed")
+    # print(request.user)
+     
 
 @login_required(login_url='signin')
 def upload_files(request):

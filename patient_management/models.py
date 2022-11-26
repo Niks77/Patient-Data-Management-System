@@ -158,6 +158,7 @@ class File(models.Model):
     date_created = models.DateTimeField(default=datetime.now)
     date_updated = models.DateTimeField(auto_now=True)
     share = models.ManyToManyField('User',blank=True,related_name="SharedUsers")
+    verified = models.BooleanField(default=False)
     cipher = models.FileField(upload_to='documents/', blank = True, null = True)
     def __str__(self):
         return self.user.username + '-' + self.title
