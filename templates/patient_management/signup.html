@@ -9,15 +9,7 @@
 <link rel="stylesheet" href="{% static 'Login_style.css' %}">
 
 </head>
-<script type="text/javascript" >
-  function fix_selects(){
-    document.getElementById("type").selectedIndex = 2;
-    //Or
-    // document.getElementById("MySelect").value = '#';
-
-  }
-</script>
-<body onload="fix_selects()">
+<body>
 <div class="pt-5">
   <h1 class="text-center"> New Patient Signup</h1>
   
@@ -37,13 +29,15 @@
                                                     
                             <form id="submitForm" action="/signup" method="post" enctype="multipart/form-data" data-dropdown-url="{% url 'ajax_load_dropdown' %}"><input type="hidden" name="_csrf" value="7635eb83-1f95-4b32-8788-abec2724a9a4">
                                 {% csrf_token %}
+                                    {% comment %} {{form.as_p}} {% endcomment %}
                                 <div class="form-group required">
                                     <label for="username">Enter your Patient ID</label>
                                     <input type="text" class="form-control text-lowercase" id="username" required="required" name="username" value="">
+                                    
                                 </div> 
                                 <div class="form-group required">
                                     <label for="username">Enter your Name</label>
-                                    <input type="text" class="form-control text-lowercase" id="fname" required="required" name="fname" value="">
+                                    <input type="text" class="form-control text-lowercase" id="name" required="required" name="name" value="">
                                 </div>    
                                 <div class="form-group required">
                                     <label for="password">Create a Password</label>
@@ -61,20 +55,25 @@
                                 </div> 
                                 <div class="form-group required">
                                     <select class="form-control" id="type" name="type">
-                                        <option value = "Patient">Patient</option>
-                                        <option value = "Healthcare Professional">Healthcare Professional</option>
+                                        <option value = "p">Patient</option>
+                                        <option value = "h">Healthcare Professional</option>
                                         <option value = "none" selected disabled>Selected Type of User</option>
                                     </select>
                                 </div>
                                 <div id="fileUpload">
                                 </div>
                                 <div class="form-group mt-4 mb-4">
-                                    
+                                    {{ form.as_p }}
                                 </div>
                                 <div class="form-group pt-1">
                                     <button class="btn btn-primary btn-block" type="submit">Sign Up</button>
                                 </div>
                             </form>
+                            
+                            <p class="small-xl pt-3 text-center">
+                                <span class="text-muted">Organization?</span>
+                                <a href="/signupOrg">Create Organization Account</a>
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -88,3 +87,4 @@
 </body>
 <script src="{% static 'dropdown.js' %}"></script>
 </html>
+

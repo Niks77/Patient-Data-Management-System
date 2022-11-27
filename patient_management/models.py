@@ -152,7 +152,7 @@ class Product(models.Model):
         return self.name
 
 class File(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey('User', on_delete=models.CASCADE)
     title = models.CharField(max_length=250)
     description = models.TextField(blank=True, null=True)
     file_path = models.FileField(upload_to='documents/',blank=True, null=True,validators=[validate_file_size])
@@ -241,6 +241,7 @@ class Order(models.Model):
 class Tokens(models.Model):
     token = models.CharField(max_length=100)
     username = models.CharField(max_length=100)
+    expire = models.DateField()
     used = models.BooleanField(default=False)
 
 class InsuranceClaim(models.Model):
@@ -248,6 +249,7 @@ class InsuranceClaim(models.Model):
     to = models.ForeignKey('User',on_delete = models.CASCADE, related_name='UserTo')
     appproved = models.BooleanField(default=False)
     rejected = models.BooleanField(default=False)
+    file = models.ForeignKey('File', on_delete=models.CASCADE,related_name="claimfile")
 
 class PharmacyOrder(models.Model):
     by = models.ForeignKey('User',on_delete = models.CASCADE, related_name='PhUserBy')

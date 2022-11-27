@@ -13,13 +13,14 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import EmailMessage, send_mail
 from django.views.decorators.csrf import csrf_exempt
 from paypal.standard.forms import PayPalPaymentsForm
-from .forms import CartForm, CheckoutForm, FormWithCaptcha
+from .forms import CartForm, CheckoutForm, FormWithCaptcha,SignupForm
 from . import cart
 import requests
 from django.core.files import File as file
 from decimal import Decimal
 from patient_management.certificate import (verifyfile, generate_key) 
 from . tokens import generate_token
+from ratelimit.decorators import ratelimit
 # Create your views here.
 
 
@@ -32,19 +33,13 @@ def signupOrg(request):
         password = request.POST.get('password')
         password1 = request.POST.get('password1')
         contactDetails = request.POST.get('contactDetails')
-        url = 'https://www.google.com/recaptcha/api/siteverify'
         type = request.POST.get('type')
-        # values = {
-        #     'secret': settings.GOOGLE_RECAPTCHA_SECRET_KEY,
-        #     'response': recaptcha_response
-        # }
-        # r = requests.post(url, data=values)
-        # result = r.json()
-        if True:
-            pass
+        captchaForm = FormWithCaptcha(request.POST)
+        if not captchaForm.is_valid():
+            messages.error(request, "Invalid captcha")
+            return redirect('signin') 
         else:
-            messages.error(request, 'Invalid reCAPTCHA. Please try again.')
-            return redirect('signup')
+            pass
         try:
             image1 = request.FILES['image1']
         except:
@@ -92,42 +87,60 @@ def signupOrg(request):
             return redirect('signupOrg')
         messages.success(request, "Your Account has been created succesfully")
         return redirect('signin')
-    return render(request,"patient_management/signupOrg.html")
+    captchaForm = FormWithCaptcha()
 
+    return render(request,"patient_management/signupOrg.html",{
+        'form':captchaForm,
+    })
+
+
+@ratelimit(key='ip', rate='100/h', block=True)
 @login_required(login_url='signin')
 def home(request):
-    all_products = Product.objects.all()
-    current_site = get_current_site(request)
-
+    if request.method == "GET":
+        if request.user == None:
+            messages.error(request, "Session expired")
+            return redirect('signin')
+        else: 
+            user = request.user
+            if user == None:
+                messages.error(request, "Session expired")
+                return redirect('signin')
+            else:
+                if user.type == 't':
+                    return redirect('sharefilehospital')
+                elif user.type == 'i':
+                    return redirect('s')
+        all_products = Product.objects.all()
+        current_site = get_current_site(request)
+    
     # file = File.objects.get(pk=3)
     # print(verifyfile(file.cipher,request.user,file.file_path))
-    return render(request,"patient_management/Productcard.html",{
+        return render(request,"patient_management/Productcard.html",{
                                     'all_products': all_products,
                                     'urls' : current_site
                                     })
+    else:
+        return HttpResponse("Not found")
 
 
+@ratelimit(key='ip', rate='100/h', block=True)
 def signup(request):
     if request.method == "POST":
+        sigupForm= SignupForm(request.POST)
+        print(sigupForm.is_valid())
         username = request.POST.get('username')
-        fname = request.POST.get('fname')
+        fname = request.POST.get('name')
         email = request.POST.get('email')
         password = request.POST.get('password')
         password1 = request.POST.get('password1')
-        recaptcha_response = request.POST.get('g-recaptcha-response')
-        url = 'https://www.google.com/recaptcha/api/siteverify'
-        type = request.POST.get('type')
-        values = {
-            'secret': settings.RECAPTCHA_PRIVATE_KEY,
-            'response': recaptcha_response
-        }
-        r = requests.post(url, data=values)
-        result = r.json()
-        if True:
-            pass
-        else:
-            messages.error(request, 'Invalid reCAPTCHA. Please try again.')
-            return redirect('signup')
+        # captchaForm = FormWithCaptcha(request.POST)
+        # type = request.POST.get('type')
+        # if not captchaForm.is_valid():
+        #     messages.error(request, "Invalid captcha")
+        #     return redirect('signup') 
+        # else:
+        #     pass
         try:
             license = request.FILES['license']
         except:
@@ -138,34 +151,34 @@ def signup(request):
         except:
             identity =  None
         emailRegex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
-        if User.objects.filter(username=username):
-            messages.error(request, "Username already exist! Please try some other username.")
-            return redirect('signup')
-        if type == None:
-            messages.error(request, "Please select user type")
-            return redirect('signup')
-        if type != "Patient" and type != "Healthcare Professional":
-            messages.error(request, "Please select valid user type")
-            return redirect('signup')
-        if not re.fullmatch(emailRegex,email):
-            messages.error(request, "Enter valid email")
-            return redirect('signup')
-        if User.objects.filter(email=email).exists():
-            messages.error(request, "Email Already Registered!!")
-            return redirect('signup')
-        if identity == None:
-            messages.error(request,"Identity document is compulsory")
-            return redirect('signup')
-        if type == "Healthcare Professional" and license == None:
-            messages.error(request,"License document is compulsory")
-            return redirect('signup')
-        if password != password1:
-            messages.error(request, "Passwords didn't matched!!")
-            return redirect('signup')
+        # if User.objects.filter(username=username):
+        #     messages.error(request, "Username already exist! Please try some other username.")
+        #     return redirect('signup')
+        # if type == None:
+        #     messages.error(request, "Please select user type")
+        #     return redirect('signup')
+        # if type != "Patient" and type != "Healthcare Professional":
+        #     messages.error(request, "Please select valid user type")
+        #     return redirect('signup')
+        # if not re.fullmatch(emailRegex,email):
+        #     messages.error(request, "Enter valid email")
+        #     return redirect('signup')
+        # if User.objects.filter(email=email).exists():
+        #     messages.error(request, "Email Already Registered!!")
+        #     return redirect('signup')
+        # if identity == None:
+        #     messages.error(request,"Identity document is compulsory")
+        #     return redirect('signup')
+        # if type == "" and license == None:
+        #     messages.error(request,"License document is compulsory")
+        #     return redirect('signup')
+        # if password != password1:
+        #     messages.error(request, "Passwords didn't matched!!")
+        #     return redirect('signup')
 
-        if not username.isalnum():
-            messages.error(request, "Username must be Alpha-Numeric!!")
-            return redirect('signup ')
+        # if not username.isalnum():
+        #     messages.error(request, "Username must be Alpha-Numeric!!")
+        #     return redirect('signup ')
         myuser = User.objects.create_user(username,fname,email,password,type)
         if(type == "Patient"):
             try:
@@ -206,10 +219,13 @@ def signup(request):
         
         return redirect('signin')
     
+    captchaForm = FormWithCaptcha()
 
-    return render(request,"patient_management/signup.html")
+    return render(request,"patient_management/signup.html",{
+        'form':captchaForm,
+    })
 
-
+@ratelimit(key='ip', rate='100/h', block=True)
 @login_required(login_url='signin')
 def editProfile(request):
     if request.method == "POST":
@@ -225,6 +241,7 @@ def editProfile(request):
 
     return render(request,"patient_management/signup.html")
 
+@ratelimit(key='ip', rate='100/h', block=True)
 @login_required(login_url='signin')
 def search(request):
     
@@ -232,7 +249,7 @@ def search(request):
 		query = request.POST.get("q",None)
 		type = request.POST.get("type",None)
 		if type is None:
-			messages.error("Search type is required")
+			messages.error(request,"Search type is required")
 			return redirect("home")
 		if type == "name":
 			if query is not None:
@@ -348,7 +365,24 @@ def search(request):
     
 	return render(request,"patient_management/index.html")
     
+@ratelimit(key='ip', rate='100/h', block=True)
+def pharmaorder(request):
+    if request.method == "POST":
+        by = request.POST.get('by')
+        to = request.POST.get('to')
+        filekey = request.POST.get('filekey')
+    else:
+        user = request.user
+        if user is None:
+            messages.error("session expires")
+            return redirect('signin')
+        else:
+            if by is None:
+                pass
 
+        
+
+@ratelimit(key='ip', rate='100/h', block=True)
 def forgotpassword(request):
     logout(request)
     if request.method == "POST":
@@ -359,6 +393,9 @@ def forgotpassword(request):
             myuser = None
 
         if myuser is not None:
+            if not myuser.isUser:
+                messages.error(request,"organization are able to reset password")
+                return redirect('home')
             current_site = get_current_site(request)
             gen_token = generate_token.make_token(myuser)
             email_subject = "Forgot password for Patient FCS IIITD !!"
@@ -386,6 +423,7 @@ def forgotpassword(request):
     return render(request,"patient_management/forgot_pass.html")
 
 
+@ratelimit(key='ip', rate='100/h', block=True)
 def reset(request,username,token):
     if request.method == "POST":
         if username == None:
@@ -451,6 +489,7 @@ def reset(request,username,token):
 
 
 
+@ratelimit(key='ip', rate='100/h', block=True)
 def activate(request,username,token):
     try:
         myuser = User.objects.get(username = username)
@@ -464,7 +503,9 @@ def activate(request,username,token):
         return redirect('signin')
     else:
         return render(request,'patient_management/activation_failed.html')
-    
+
+
+@ratelimit(key='ip', rate='100/h', block=True) 
 def removeshare(request):
     if request.method == "POST":
         if request.user == None:
@@ -523,10 +564,14 @@ def removeshare(request):
     return HttpResponse("Not allowed")
 
 
+@ratelimit(key='ip', rate='100/h', block=True)
 def load_dropdown(request):
      type = request.GET.get('type')
+  
      return render(request, 'patient_management/fileupload.html', {'type': type})
 
+
+@ratelimit(key='ip', rate='100/h', block=True)
 @login_required(login_url='signin')
 def verify(request) :
     if request.method == "POST":
@@ -552,6 +597,9 @@ def verify(request) :
                     messages.error(request,"File is missing or wrong request")
                     return redirect('verify')
                 else:
+                    if file.verified:
+                        messages.success(request, "File is verified")
+                        return redirect('verify')
                     if verifyfile(file.cipher,user.username,file.file_path):
                         file.verified = True
                         file.save()
@@ -565,6 +613,7 @@ def verify(request) :
 
 
 
+@ratelimit(key='ip', rate='100/h', block=True)
 @login_required(login_url='signin')
 def delete(request) :
     if request.method == "POST":
@@ -601,6 +650,7 @@ def delete(request) :
         
 
 
+@ratelimit(key='ip', rate='100/h', block=True)
 @login_required(login_url='signin')
 def sharefile(request):
     # print("name" + request.user .username)
@@ -625,8 +675,6 @@ def sharefile(request):
                     try:
                         
                         fileObj = File.objects.get(pk=filepk)
-                        print(filepk)
-                        print(fileObj)
                     except:
                         fileObj = None
                     if fileObj is None:
@@ -683,6 +731,7 @@ def sharefile(request):
      
 
 
+@ratelimit(key='ip', rate='100/h', block=True)
 @login_required(login_url='signin')
 def upload_files_by_hospital(request):
     if request.method == "POST":
@@ -734,18 +783,30 @@ def upload_files_by_hospital(request):
                 fileObj = File(user=share_user,title=title,description=description,file_path=file_path)
                 fileObj.save()
                 cipherpath = generate_key(share_username,fileObj.file_path.path)
-                print(cipherpath)
+                # print(cipherpath)
                 if cipherpath != None:
-                    cipherfile = open(cipherpath)
-                    djangocipherfile = file(cipherfile)
-                    fileObj.cipher.save('new', djangocipherfile)
-                    cipherfile.close()
-                    fileObj.save()
+                    try:
+                        cipherfile = open(cipherpath)
+                        djangocipherfile = file(cipherfile)
+                        fileObj.cipher.save('new', djangocipherfile)
+                        cipherfile.close()
+                        fileObj.save()
+                    except:
+                        pass
                 
                 messages.success(request,"files has successfully shared with user:" + str(share_user.username))
                 return redirect('upload')
+    user = request.user
+    if user == None:
+        messages.error(request, "Session expired")
+        return redirect('signin')
+    else:
+        if user.type != 't':
+            return HttpResponse("restricted access")
     return  render(request,"patient_management/indexHos.html")   
 
+
+@ratelimit(key='ip', rate='100/h', block=True)
 @login_required(login_url='signin')
 def upload_files(request):
     if request.method == "POST":
@@ -801,6 +862,9 @@ def upload_files(request):
                 if not share_user.approved:
                     messages.error(request,"share user is not approved to use platform")
                     return redirect('upload')
+                if share_user.type == "p" or share_user.type == "a":
+                    messages.error(request,"shared user cannot be another patient or admin")
+                    return redirect('upload')
                 fileObj = File(user=user,title=title,description=description,file_path=file_path,cipher=file_pathkey)
                 fileObj.save()
                 fileObj.share.add(share_user)
@@ -809,6 +873,8 @@ def upload_files(request):
                 return redirect('upload')
     return  render(request,"patient_management/uploadfile.html")         
 
+
+@ratelimit(key='ip', rate='100/h', block=True)
 @login_required(login_url='signin')
 def your_docs(request):
     if request.method == "GET":
@@ -823,7 +889,9 @@ def your_docs(request):
             else:
                 files = user.file_set.all()
                 return render(request,"patient_management/owndocs.html",{'files': files})
-    
+  
+
+@ratelimit(key='ip', rate='100/h', block=True)  
 @login_required(login_url='signin')
 def shared_docs(request):
     if request.method == "GET":
@@ -837,8 +905,10 @@ def shared_docs(request):
                 return redirect('signin')
             else:
                 files = File.objects.filter(share=user)
+   
                 return render(request,"patient_management/shareddocs.html",{'files': files})
 
+@ratelimit(key='ip', rate='100/h', block=True)
 @login_required(login_url='signin')
 def change_password(request):
     if request.method == "POST":
@@ -864,10 +934,12 @@ def change_password(request):
                     user.set_password(new_password)
                     user.save()
                     messages.success(request, "Password has been successfully changed")
-                    return redirect('/')
+                    return redirect('home')
 
     return render(request,"patient_management/changepassword.html")  
 
+
+@ratelimit(key='ip', rate='100/h', block=True)
 def signin(request):
     if request.method == "POST":
         captchaForm = FormWithCaptcha(request.POST)
@@ -900,11 +972,15 @@ def signin(request):
         'form':form
     })
 
+
+@ratelimit(key='ip', rate='100/h', block=True)
 @login_required(login_url='signin')
 def signout(request):
     logout(request)
     return redirect('signin')
 
+
+@ratelimit(key='ip', rate='100/h', block=True)
 @login_required(login_url='signin')
 def show_product(request, product_id, product_slug):
     product = get_object_or_404(Product, id=product_id)
@@ -921,6 +997,8 @@ def show_product(request, product_id, product_slug):
                                             'product': product,
                                             'form': form,
                                             })
+
+@ratelimit(key='ip', rate='100/h', block=True)
 @login_required(login_url='signin')
 def show_cart(request):
 
@@ -940,6 +1018,7 @@ def show_cart(request):
                                             })
 
 
+@ratelimit(key='ip', rate='100/h', block=True)
 @login_required(login_url='signin')
 def process_payment(request):
     order_id = request.session.get('order_id')
@@ -965,15 +1044,19 @@ def process_payment(request):
     return render(request, 'patient_management/process_payment.html', {'order': order, 'form': form})
 
 
+@ratelimit(key='ip', rate='100/h', block=True)
 @csrf_exempt
 def payment_done(request):
     return render(request, 'patient_management/payment_done.html')
 
 
+@ratelimit(key='ip', rate='100/h', block=True)
 @csrf_exempt
 def payment_canceled(request):
     return render(request, 'patient_management/payment_cancelled.html')
 
+
+@ratelimit(key='ip', rate='100/h', block=True)
 @login_required(login_url='signin')
 def checkout(request):
     if request.method == 'POST':

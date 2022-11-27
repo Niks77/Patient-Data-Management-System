@@ -183,8 +183,8 @@ background: rgba(0, 0, 0, 0.6);
                     </div>
                     <div class="thumb-content">
                         <h4>{{claim.by.username}}</h4>
-                        <p class="item-price"> <span>File approved {{claim.file.approved}}</span></p>
-                        <a href="{% url 'product_detail' product.pk product.slug %}" class="btn btn-primary">Approve claim</a>
+                        <p class="item-price"> <span>Claim approved {{claim.appproved}}</span></p>
+                        <p class="item-price"> <span>Claim rejected {{claim.rejected}}</span></p>
                     </div>
                 </div>
             </div> 

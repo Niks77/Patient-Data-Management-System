@@ -155,32 +155,7 @@ background: rgba(0, 0, 0, 0.6);
 </head>
 <body>
 
-<nav class="navbar navbar-inverse">
-  <div class="container-fluid">
-    <div class="navbar-header">
-      <a class="navbar-brand" href="#">Patient Management</a>
-    </div>
-    <ul class="nav navbar-nav">
-      <li class="active"><a href="#">Home</a></li>
-      <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Docs<span class="caret"></span></a>
-        <ul class="dropdown-menu">
-          <li><a href="your_docs">Your Docs</a></li>
-          <li><a href="shared_docs">Shared Docs</a></li>
-          <li><a href="upload">Upload Files</a></li>
-        </ul>
-      </li>
-    
-    </ul>
-    <ul class="nav navbar-nav navbar-right">
-        <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="glyphicon glyphicon-user"></span> Change profile<span class="caret"></span></a>
-            <ul class="dropdown-menu">
-            <li><a href="/change_password">Change password</a></li>
-            </ul>
-        </li>
-      <li><a href="/signout"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
-    </ul>
-  </div>
-</nav>
+{% include "patient_management/navbar.html" %}
 <div class="container">
 <div class="row">
 <div class="col-md-12">
@@ -222,29 +197,7 @@ background: rgba(0, 0, 0, 0.6);
                                     <button class="btn btn-primary btn-block" type="submit">Submit</button>
                                 </div>
                             </form>
-<!-- Carousel indicators --> 
-<!-- Wrapper for carousel items -->
-{% comment %} <div class="carousel-inner">
-    <div class="carousel-item active">
-        <div class="row">
-            {% for product in all_products %}
-            <div class="col-sm-3">
-                <div class="thumb-wrapper">
-                    <div class="img-box">
-                        <img src="http://{{urls}}/media/{{product.image}}" class="img-fluid" alt="">
-                    </div>
-                    <div class="thumb-content">
-                        <h4>{{product.name}}</h4>
-                        <p class="item-price"> <span>Rs {{product.price}}</span></p>
-                        <a href="{% url 'product_detail' product.pk product.slug %}" class="btn btn-primary">Add to Cart</a>
-                    </div>
-                </div>
-            </div> 
-            {% endfor %}
-        </div>
-    </div>
 
-</div> {% endcomment %}
 </div>
 </div>
 </div>

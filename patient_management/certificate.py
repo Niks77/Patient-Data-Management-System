@@ -64,27 +64,27 @@ def verifyfile(cipher, username,fileverify):
 
 def generate_key(username,file_path):
     sha256_hash = hashlib.sha256()
-    # try:
-    with open(file_path,"rb") as f:
-        for byte_block in iter(lambda: f.read(4096),b""):
-            if byte_block is not None:
-                sha256_hash.update(byte_block)
-        new_hash = sha256_hash.hexdigest()
-        store =  str(encrypt(username + str(new_hash)))
-        path = os.path.join(settings.MEDIA_ROOT, 'documents')
-        path = os.path.join(path,'key_'+str(datetime.now()))
-        # try:
-        with open(path, 'w') as f:
-            myfile = File(f)
-            myfile.write(store)
-            myfile.close()
-            f.close()
-            return path
-        # except:
-        #     pass
+    try:
+        with open(file_path,"rb") as f:
+            for byte_block in iter(lambda: f.read(4096),b""):
+                if byte_block is not None:
+                    sha256_hash.update(byte_block)
+            new_hash = sha256_hash.hexdigest()
+            store =  str(encrypt(username + str(new_hash)))
+            path = os.path.join(settings.MEDIA_ROOT, 'documents')
+            path = os.path.join(path,'key_'+str(datetime.now()))
+            try:
+                with open(path, 'w') as f:
+                    myfile = File(f)
+                    myfile.write(store)
+                    myfile.close()
+                    f.close()
+                    return path
+            except:
+                pass
 
 
-    # except:
-    #     pass
+    except:
+        pass
 
         
