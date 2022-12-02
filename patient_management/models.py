@@ -2,6 +2,8 @@
 from django.db import models
 from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager)
 from datetime import datetime, timezone
+
+from django.core.exceptions import ValidationError
 from .validator import validate_file_size
 # Create your models here.
 
@@ -31,16 +33,17 @@ class UserManager(BaseUserManager):
             username=username,
             orgName=name
             )
-        if type == "pharmacy":
+        if type == "r":
             org.type = 'r'
-        elif type == "hospital":
+        elif type == "t":
             org.type = 't'
-        elif type == "insurance firms":
+        elif type == "i":
             org.type = 'i'
         else:#default 
             org.type = 'r'
         org.isUser = False
         org.is_active = True
+    
         org.set_password(password)
         org.description = description
         org.location = location
@@ -62,12 +65,12 @@ class UserManager(BaseUserManager):
         user = self.model(
             email=self.normalize_email(email),
             username = username)
-        if type == "Patient":
+        if type == "p":
             user.type = 'p'
-        elif type == "Healthcare Professional":
+        elif type == "h":
             user.type = 'h'
         else :
-            user.type = 'a'
+            user.type = 'p'
         user.set_password(password)
         user.name = name
         # user = self.create(username = username, name = name, email = email, password = password)
@@ -110,7 +113,7 @@ class User(AbstractBaseUser):
         ('i', 'insurance firms')
     )
     username = models.CharField(max_length = 50, unique = True,primary_key = True)
-    name = models.CharField(max_length = 150)
+    name = models.CharField(max_length = 150,blank=True,null=True)
     orgName = models.CharField(max_length = 150,blank=True, null=True)
     email = models.EmailField(max_length = 100,blank=True,null=True)
     password = models.CharField(max_length = 100)
@@ -138,6 +141,21 @@ class User(AbstractBaseUser):
     
     def has_module_perms(self, app_label):
         return True
+    
+    # def clean(self):
+    #     if (self.name is not None) and (not self.name.isalnum()):
+    #         raise ValidationError("name are incorrect")
+    #     elif (self.orgName is not None) and (not self.orgName.isalnum()):
+    #         raise ValidationError("orgName are incorrect")
+    #     elif (self.description is not None) and (not self.description.isalnum()):
+    #         raise ValidationError("description are incorrect")
+    #     elif (self.location is not None) and (not self.location.isalnum()):
+    #         raise ValidationError("location are incorrect")
+    #     elif (self.contactDetails is not None) and (not self.contactDetails.isalnum()):
+    #         raise ValidationError("contactDetails are incorrect")
+    #     elif (self.username is None) and (not self.username.isalnum()):
+    #         raise ValidationError("username are incorrect")
+        
 
 
 class Product(models.Model):
@@ -168,10 +186,12 @@ class HCPDocument(models.Model):
     user = models.ForeignKey('User',on_delete = models.CASCADE)
     identity_proof = models.FileField(upload_to='documents/',validators=[validate_file_size]) 
     license_proof = models.FileField(upload_to='documents/',validators=[validate_file_size])
+    
 
 class PDocument(models.Model):
     user = models.ForeignKey('User',on_delete = models.CASCADE)
     identity_proof = models.FileField(upload_to='documents/',validators=[validate_file_size]) 
+    
 
 
 # class Organization(AbstractBaseUser):
@@ -241,15 +261,15 @@ class Order(models.Model):
 class Tokens(models.Model):
     token = models.CharField(max_length=100)
     username = models.CharField(max_length=100)
-    expire = models.DateField()
+    expire = models.PositiveBigIntegerField()
     used = models.BooleanField(default=False)
 
-class InsuranceClaim(models.Model):
-    by = models.ForeignKey('User',on_delete = models.CASCADE,related_name='UserBy')
-    to = models.ForeignKey('User',on_delete = models.CASCADE, related_name='UserTo')
-    appproved = models.BooleanField(default=False)
-    rejected = models.BooleanField(default=False)
-    file = models.ForeignKey('File', on_delete=models.CASCADE,related_name="claimfile")
+# class InsuranceClaim(models.Model):
+#     by = models.ForeignKey('User',on_delete = models.CASCADE,related_name='UserBy')
+#     to = models.ForeignKey('User',on_delete = models.CASCADE, related_name='UserTo')
+#     appproved = models.BooleanField(default=False)
+#     rejected = models.BooleanField(default=False)
+#     file = models.ForeignKey('File', on_delete=models.CASCADE,related_name="claimfile")
 
 class PharmacyOrder(models.Model):
     by = models.ForeignKey('User',on_delete = models.CASCADE, related_name='PhUserBy')

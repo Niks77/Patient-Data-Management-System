@@ -35,8 +35,8 @@
                                 </div> 
 
                                  <div class="form-group required">
-                                    <label for="name">Enter your Organization Name</label>
-                                    <input type="text" class="form-control text-lowercase" id="name" required="required" name="name" value="">
+                                    <label for="orgName">Enter your Organization Name</label>
+                                    <input type="text" class="form-control text-lowercase" id="orgName" required="required" name="orgName" value="">
                                 </div> 
                                 <div class="form-group required">
                                     <label for="description">Enter Description</label>
@@ -63,9 +63,9 @@
                                 </div> 
                                 <div class="form-group required">
                                     <select class="form-control" id="type" name="type">
-                                        <option value = "pharmacy">Pharmacy</option>
-                                        <option value = "hospital">Hospital</option>
-                                        <option value = "insurance firms">Insurance Firms</option>
+                                        <option value = "r">Pharmacy</option>
+                                        <option value = "t">Hospital</option>
+                                        <option value = "i">Insurance Firms</option>
                                         <option value = "none" selected disabled>Selected Type of Organization</option>
                                     </select>
                                 </div>
@@ -80,7 +80,7 @@
                                     </div>
                                 </div>
                                 <div class="form-group mt-4 mb-4">
-                                    
+                                    {{form.as_p}}
                                 </div>
                                 <div class="form-group pt-1">
                                     <button class="btn btn-primary btn-block" type="submit">Sign Up</button>

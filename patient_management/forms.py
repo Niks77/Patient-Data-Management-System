@@ -25,9 +25,10 @@ class CheckoutForm(forms.ModelForm):
             'address': forms.Textarea(attrs={'row': 5, 'col': 8}),
         }
 
+
 class SignupForm(forms.ModelForm):
     license = forms.FileField(required=False,validators=[validate_file_size])
-    identity = forms.FileField(validators=[validate_file_size])
+    identity = forms.FileField(required=False,validators=[validate_file_size])
     password1 = forms.CharField(max_length = 100)
     captcha = ReCaptchaField(widget=ReCaptchaV2Checkbox)
     class Meta:

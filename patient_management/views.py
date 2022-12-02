@@ -16,6 +16,9 @@ from paypal.standard.forms import PayPalPaymentsForm
 from .forms import CartForm, CheckoutForm, FormWithCaptcha,SignupForm
 from . import cart
 import requests
+import datetime
+import html
+import random
 from django.core.files import File as file
 from decimal import Decimal
 from patient_management.certificate import (verifyfile, generate_key) 
@@ -24,10 +27,51 @@ from ratelimit.decorators import ratelimit
 # Create your views here.
 
 
+def validate_password(password):
+
+        special_symbols =['$', '@', '#', '%']
+        
+        
+        if len(password) < 6:
+                print('Password must have atleast 6 characters.')
+                return False
+                    
+        if len(password) > 20:
+                # print('Password cannot have more than 20 characters.')
+                return False
+        
+        if not any(characters.isdigit() for characters in password):
+                # print('Password must have at least one numeric character.')
+                return False
+                
+   
+        if not any(characters.isupper() for characters in password):
+                # print('Password must have at least one uppercase character')
+                return False
+        
+  
+        if not any(characters.islower() for characters in password):
+                # print('Password must have at least one lowercase character')
+                return False
+                   
+        if not any(characters in special_symbols for characters in password):
+                # print('Password should have at least one of the symbols $@#%')
+                return False
+        else:
+            return True
+def is_ascii(s):
+    try: 
+        return all(ord(c) < 128 for c in s)
+    except:
+        return False
+        
+def validateinput(s, length):
+    return len(s) > length or not is_ascii(s)
+
 def signupOrg(request):
     if request.method == "POST":
         username = request.POST.get('username')
-        name = request.POST.get('name')
+        name = request.POST.get('orgName')
         description = request.POST.get('description')
         location = request.POST.get('location')
         password = request.POST.get('password')
@@ -49,6 +93,48 @@ def signupOrg(request):
             image2 = request.FILES['image2']
         except:
             image2 =  None
+        # print("type ",type)
+        if type is None:
+            messages.error("Please select Organization type")
+            return redirect('signupOrg')
+        if username is None:
+            messages.error(request, "Organization should have username")
+            return redirect('signupOrg')
+        if name is None:
+            messages.error(request, "Organization should have name")
+            return redirect('signupOrg')
+        if description is None:
+            messages.error(request, "Organization should have description")
+            return redirect('signupOrg')
+        if location is None:
+            messages.error(request, "Organization should have location")
+            return redirect('signupOrg')
+        if contactDetails is None:
+            messages.error(request, "Organization should have contactDetails")
+            return redirect('signupOrg')
+        if validateinput(username,50):
+            messages.error(request, "Organization should have username")
+            return redirect('signupOrg')
+        if validateinput(name,50):
+            messages.error(request, "Organization should have name")
+            return redirect('signupOrg')
+        if validateinput(description,100):
+            messages.error(request, "Organization should have description")
+            return redirect('signupOrg')
+        if validateinput(location,250):
+            messages.error(request, "Organization should have contactDetails")
+            return redirect('signupOrg')
+        if validateinput(location,10):
+            messages.error(contactDetails, "Organization should have contactDetails")
+            return redirect('signupOrg')
+        username = html.escape(username)
+        name = html.escape(name)
+        description = html.escape(description)
+        # description = request.POST.get('description')
+        location = html.escape(location)
+        contactDetails = html.escape(contactDetails)
+        type = html.escape(type)
+        
         if User.objects.filter(username=username):
             messages.error(request, "Organization username already exist! Please try some other username.")
             return redirect('signupOrg')
@@ -58,7 +144,7 @@ def signupOrg(request):
         if type == None:
             messages.error(request, "Please select organization type")
             return redirect('signupOrg')
-        if type != "pharmacy" and type != "hospital" and type != "insurance firms":
+        if (type != "r") and (type != "t") and (type != "i"):
             messages.error(request, "Please select valid user type")
             return redirect('signupOrg')
         if image1 == None:
@@ -74,8 +160,13 @@ def signupOrg(request):
         if not username.isalnum():
             messages.error(request, "Organization must be Alpha-Numeric!!")
             return redirect('signupOrg')
+
+        if not validate_password(password=password):
+            messages.error(request, "Enter Strong password")
+            return redirect('signupOrg')
+    
         myuser = User.objects.create_org(username,name,description,location,contactDetails,password,type)
-        # if(type == "pharmacy"):
+ 
         try:
             doc = OrganizationImage(organization=myuser,image=image1)
             doc.save()
@@ -109,13 +200,11 @@ def home(request):
             else:
                 if user.type == 't':
                     return redirect('sharefilehospital')
-                elif user.type == 'i':
-                    return redirect('s')
+                if user.type == 'h':
+                    return redirect('sharefilehospital')
         all_products = Product.objects.all()
         current_site = get_current_site(request)
     
-    # file = File.objects.get(pk=3)
-    # print(verifyfile(file.cipher,request.user,file.file_path))
         return render(request,"patient_management/Productcard.html",{
                                     'all_products': all_products,
                                     'urls' : current_site
@@ -128,96 +217,112 @@ def home(request):
 def signup(request):
     if request.method == "POST":
         sigupForm= SignupForm(request.POST)
-        print(sigupForm.is_valid())
-        username = request.POST.get('username')
-        fname = request.POST.get('name')
-        email = request.POST.get('email')
-        password = request.POST.get('password')
-        password1 = request.POST.get('password1')
-        # captchaForm = FormWithCaptcha(request.POST)
-        # type = request.POST.get('type')
-        # if not captchaForm.is_valid():
-        #     messages.error(request, "Invalid captcha")
-        #     return redirect('signup') 
-        # else:
-        #     pass
-        try:
-            license = request.FILES['license']
-        except:
-            license = None
-     
-        try:
-            identity = request.FILES['identity']
-        except:
-            identity =  None
-        emailRegex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
-        # if User.objects.filter(username=username):
-        #     messages.error(request, "Username already exist! Please try some other username.")
-        #     return redirect('signup')
-        # if type == None:
-        #     messages.error(request, "Please select user type")
-        #     return redirect('signup')
-        # if type != "Patient" and type != "Healthcare Professional":
-        #     messages.error(request, "Please select valid user type")
-        #     return redirect('signup')
-        # if not re.fullmatch(emailRegex,email):
-        #     messages.error(request, "Enter valid email")
-        #     return redirect('signup')
-        # if User.objects.filter(email=email).exists():
-        #     messages.error(request, "Email Already Registered!!")
-        #     return redirect('signup')
-        # if identity == None:
-        #     messages.error(request,"Identity document is compulsory")
-        #     return redirect('signup')
-        # if type == "" and license == None:
-        #     messages.error(request,"License document is compulsory")
-        #     return redirect('signup')
-        # if password != password1:
-        #     messages.error(request, "Passwords didn't matched!!")
-        #     return redirect('signup')
+        if sigupForm.is_valid():
+            cleanData = sigupForm.cleaned_data
+            username = cleanData.get('username')
+            name = cleanData.get('name')
+            email = cleanData.get('email')
+            password = cleanData.get('password')
+            password1 = cleanData.get('password1')
+            # captchaForm = FormWithCaptcha(request.POST)
+            type = request.POST.get('type')
+            try:
+                license = request.FILES['license']
+            except:
+                license = None
+        
+            try:
+                identity = request.FILES['identity']
+            except:
+                identity =  None
+            try: 
+                name = html.escape(name)
+                username = html.escape(username)
+            # description = request.POST.get('description')
+                type = html.escape(type)
+            except:
+                name = None
+                username = None
+            # description = request.POST.get('description')
+                # location = None
+                # contactDetails = None
+                type = None
+                
+            if type is None:
+                messages.error(request, "Please select valid user type")
+                return redirect('signup')
+            if name is None:
+                messages.error(request, "Please select enter valid name")
+                return redirect('signup')
+            if username is None:
+                messages.error(request, "Please select enter valid username")
+                return redirect('signup')
+            if (type != "p") and (type != "h"):
+                messages.error(request, "Please select valid user type")
+                return redirect('signup')
+            if User.objects.filter(email=email).exists():
+                messages.error(request, "Email Already Registered!!")
+                return redirect('signup')
+            if type == "h" and license == None:
+                messages.error(request,"License document is compulsory")
+                return redirect('signup')
+            if password != password1:
+                messages.error(request, "Passwords didn't matched!!")
+                return redirect('signup')
 
-        # if not username.isalnum():
-        #     messages.error(request, "Username must be Alpha-Numeric!!")
-        #     return redirect('signup ')
-        myuser = User.objects.create_user(username,fname,email,password,type)
-        if(type == "Patient"):
-            try:
-                doc = PDocument(user = myuser,identity_proof = identity)
-                doc.save()
-            except:
-                myuser.delete()
-                messages.error(request, "Unknown error occured")
+
+
+            if not username.isalnum():
+                messages.error(request, "Username must be Alpha-Numeric!!")
                 return redirect('signup')
-        elif(type == "Healthcare Professional"):
-            try:
-                doc = HCPDocument(user = myuser,identity_proof = identity, license_proof= license)
-                doc.save()
-            except:
-                myuser.delete()
-                messages.error(request, "Unknown error occured")
+            if not validate_password(password=password):
+                messages.error(request, "Enter Strong password")
                 return redirect('signup')
+            # print("hii")
+            myuser = User.objects.create_user(username,name,email,password,type)
+            if(type == "p"):
+                try:
+                    doc = PDocument(user = myuser,identity_proof = identity)
+                    doc.save()
+                except:
+                    myuser.delete()
+                    messages.error(request, "Unknown error occured")
+                    return redirect('signup')
+            elif(type == "h"):
+                try:
+                    doc = HCPDocument(user = myuser,identity_proof = identity, license_proof= license)
+                    doc.save()
+                except:
+                    myuser.delete()
+                    messages.error(request, "Unknown error occured")
+                    return redirect('signup')
 
         
-        messages.success(request, "Your Account has been created succesfully!! Please check your email to confirm your email address in order to activate your account.")
-        current_site = get_current_site(request)
-        email_subject = "Confirm your Email Django Login!!"
-        message2 = render_to_string('patient_management/email_confirmation.html',{
+            messages.success(request, "Your Account has been created succesfully!! Please check your email to confirm your email address in order to activate your account.")
+            current_site = get_current_site(request)
+            email_subject = "Confirm your Email Django Login!!"
+            message2 = render_to_string('patient_management/email_confirmation.html',{
+                
+                'name': myuser.name,
+                'domain': current_site.domain,
+                'username':(myuser.username),
+                'token': generate_token.make_token(myuser)
+            })
+            email = EmailMessage(
+            email_subject,
+            message2,
+            settings.EMAIL_HOST_USER,
+            [myuser.email],
+            )
+            email.fail_silently = True
+            email.send()
             
-            'name': myuser.name,
-            'domain': current_site.domain,
-            'username':(myuser.username),
-            'token': generate_token.make_token(myuser)
-        })
-        email = EmailMessage(
-        email_subject,
-        message2,
-        settings.EMAIL_HOST_USER,
-        [myuser.email],
-        )
-        email.fail_silently = True
-        email.send()
-        
-        return redirect('signin')
+            return redirect('signin')
+        else:
+            print(sigupForm.errors)
+
+            messages.error(request,"Error occured")
+            return redirect('signup')
     
     captchaForm = FormWithCaptcha()
 
@@ -234,8 +339,14 @@ def editProfile(request):
             messages.error(request, "Session expired")
             return redirect('signin')
        
-        fname = request.POST.get('fname')
-        user.name = fname
+        try:
+            fname = request.POST.get('fname')
+            fname = html.escape(fname)
+            user.name = fname
+            user.save()
+        except:
+            messages.error('Something went wrong')
+            return redirect('home')
         messages.success(request, "Your account name has been changed successfully")
         return redirect('home')
 
@@ -292,7 +403,7 @@ def search(request):
                                         
 					user = User.objects.filter(
 					type=type_of_user) 
-					print(user)
+					# print(user)
 					return render(request,"patient_management/index.html", {"data":{"pharma":user}})
 				elif query == "hospital":
 					type_of_user = 't'
@@ -365,21 +476,6 @@ def search(request):
     
 	return render(request,"patient_management/index.html")
     
-@ratelimit(key='ip', rate='100/h', block=True)
-def pharmaorder(request):
-    if request.method == "POST":
-        by = request.POST.get('by')
-        to = request.POST.get('to')
-        filekey = request.POST.get('filekey')
-    else:
-        user = request.user
-        if user is None:
-            messages.error("session expires")
-            return redirect('signin')
-        else:
-            if by is None:
-                pass
-
         
 
 @ratelimit(key='ip', rate='100/h', block=True)
@@ -387,6 +483,8 @@ def forgotpassword(request):
     logout(request)
     if request.method == "POST":
         username = request.POST.get('username')
+        if username is not None:
+            username = html.escape(username)
         try:
             myuser = User.objects.get(username = username)
         except (TypeError,ValueError,OverflowError,User.DoesNotExist):
@@ -394,7 +492,7 @@ def forgotpassword(request):
 
         if myuser is not None:
             if not myuser.isUser:
-                messages.error(request,"organization are able to reset password")
+                messages.error(request,"organization are  not able to reset password")
                 return redirect('home')
             current_site = get_current_site(request)
             gen_token = generate_token.make_token(myuser)
@@ -414,9 +512,24 @@ def forgotpassword(request):
             email.fail_silently = True
             email.send()
             alreadyExist = Tokens.objects.filter(token=gen_token)
-            if alreadyExist is not None:
-                tokenobj =Tokens(token = gen_token,username = myuser.username)
-                tokenobj.save()
+            # print(alreadyExist)
+            # print("hoo")
+            if not alreadyExist.exists():
+                try:
+                    # print("hoo1")
+                    date = (datetime.datetime.now() + datetime.timedelta(seconds=300)).timestamp()
+                    # print(type(date))
+                    tokenobj =Tokens(token = gen_token,username = myuser.username,expire=round(date))
+                    # print('date')
+                    tokenobj.save()
+                    # print('save')
+                except Exception as e:
+                    print(e)
+                    messages.error(request,"Something went wrong")
+                    return redirect('home')
+            else:
+                messages.error(request,"token already exists")
+                return redirect('home')
             messages.success(request, "Your Have request for password , please check mail for verfication")
             
         return redirect('home')
@@ -433,13 +546,11 @@ def reset(request,username,token):
             try:
                 tokenobj = Tokens.objects.get(token=token)
             except:
-                # print(e)
                 tokenobj = None
 
             try:
                 user = User.objects.get(username=username)
             except:
-                # print(e)
                 user = None
             if tokenobj == None:
                 messages.error(request, "token doesnt exists")
@@ -447,6 +558,9 @@ def reset(request,username,token):
             if user  == None:
                 messages.error(request, "user doesnt exists")
                 return redirect('signin')
+            if tokenobj.expire <= round(datetime.datetime.now().timestamp()):
+                messages.error("Token is valid for 5 mins")
+                return redirect('sigin')
             else:
                 if tokenobj.used == True:
                     messages.error(request, "Token already used")
@@ -454,24 +568,40 @@ def reset(request,username,token):
                 if tokenobj.username != username:
                     messages.error(request, "Invalid Token")
                     return redirect('signin')
-                # old_password = request.POST.get('oldpassword')
                 new_password = request.POST.get('newpassword')
                 confirm_password = request.POST.get('confirmpassword')
     
                 if new_password != confirm_password:
                     messages.error(request, "New password and confirm password are not same")
                     return redirect('reset')
+                
                 else:
-                    tokenobj.delete()
+                    tokenobj.used = True
+                    tokenobj.save()
                     user.set_password(new_password)
                     user.save()
                     messages.success(request, "Password has been successfully changed")
+     
                     return redirect('home')
+    # print("hii")
     try:
         myuser = User.objects.get(username = username)
     except (TypeError,ValueError,OverflowError,User.DoesNotExist):
         myuser = None
+    # print("hii1")
+    try:
+        tokenobj = Tokens.objects.get(token=token)
+    except:
+        tokenobj = None
+    # print("hii2")
+    if tokenobj is None:
+        messages.error(request, "Token not found or expired")
+        return render(request,'patient_management/activation_failed.html')
 
+    print(type(tokenobj.expire))
+    if tokenobj.expire <= round(datetime.datetime.now().timestamp()):
+        messages.error(request,"Token is valid for 5 mins")
+        return redirect('signin')
     if myuser is not None and generate_token.check_token(myuser,token):
         #  todo check if token already exists
         alreadyExist = Tokens.objects.filter(token=token)
@@ -520,7 +650,10 @@ def removeshare(request):
             else:
                 share_username = request.POST.get('share_username')
                 filepk = request.POST.get('filekey')
-      
+                if share_username is not None:
+                    share_username = html.escape(share_username)
+                if filepk is not None:
+                    filepk = html.escape(filepk)
                 try:
                     share_user = User.objects.get(username = share_username)
                 except:
@@ -571,7 +704,7 @@ def load_dropdown(request):
      return render(request, 'patient_management/fileupload.html', {'type': type})
 
 
-@ratelimit(key='ip', rate='100/h', block=True)
+@ratelimit(key='ip', rate='10/h', block=True)
 @login_required(login_url='signin')
 def verify(request) :
     if request.method == "POST":
@@ -589,6 +722,7 @@ def verify(request) :
                 messages.error(request, "Session expired")
                 return redirect('signin')
             else:
+                pk = html.escape(pk)
                 try:
                     file = File.objects.get(pk=pk)
                 except:
@@ -623,6 +757,14 @@ def delete(request) :
         else:  
             user = request.user
             pk = request.POST.get('file')
+
+            try:
+                user = html.escape(user)
+                pk = html.escape(pk)
+            except:
+                user = None
+                pk = None
+                    
             if user == None:
                 messages.error(request, "Session expired")
                 return redirect('signin')
@@ -631,6 +773,7 @@ def delete(request) :
                 messages.error(request, "File name is required")
                 return redirect('delete')
             else:
+                
                 try:
                     file = File.objects.get(pk=pk)
                 except:
@@ -683,33 +826,36 @@ def sharefile(request):
                     if fileObj.user.username != user.username:
                         messages.error(request,"You are not file owner")
                         return redirect('your_docs')
+                        # share_username = html.escape(share_username)
                     users = fileObj.share.all()
                     return  render(request,"patient_management/sharefile.html", {
                     'filekey' : filepk,
                     'users': users,
  
                     })         
-      
+                
                 try:
+                    share_username = html.escape(share_username)
                     share_user = User.objects.get(username = share_username)
                 except:
                     share_user = None
                 # print(share_user)
                 if filepk is None:
                     messages.error(request,"File key doesnt exists")
-                    return redirect('sharefile')
+                    return redirect('home')
                 if share_user is None:
+                    # print("hii")
                     messages.error(request,"User doesnt exists")
-                    return redirect('sharefile')
+                    return redirect('home')
                 if share_username == user.username:
                     messages.error(request,"You cannot share with yourself")
-                    return redirect('sharefile')
+                    return redirect('home')
                 if share_user.banned:
                     messages.error(request,"share user is banned")
-                    return redirect('sharefile')
+                    return redirect('home')
                 if not share_user.approved:
                     messages.error(request,"share user is not approved to use platform")
-                    return redirect('sharefile')
+                    return redirect('home')
                 try:
                     fileObj = File.objects.get(pk=filepk)
                 except:
@@ -743,11 +889,17 @@ def upload_files_by_hospital(request):
             if user == None:
                 messages.error(request, "Session expired")
                 return redirect('signin')
-            elif user.type != 't':
+            elif user.type != 't' and user.type != 'h':
                 return HttpResponse("Unauthorized access")
             else:
                 title = request.POST.get('title')
                 description = request.POST.get('description')
+                try:
+                    title = html.escape(title)
+                    description = html.escape(description)
+                except:
+                    title = None
+                    description =None
                 try:
                     file_path = request.FILES['docs']
                 except:
@@ -795,13 +947,13 @@ def upload_files_by_hospital(request):
                         pass
                 
                 messages.success(request,"files has successfully shared with user:" + str(share_user.username))
-                return redirect('upload')
+                return redirect('home')
     user = request.user
     if user == None:
         messages.error(request, "Session expired")
         return redirect('signin')
     else:
-        if user.type != 't':
+        if user.type != 't' and user.type !='h':
             return HttpResponse("restricted access")
     return  render(request,"patient_management/indexHos.html")   
 
@@ -865,10 +1017,16 @@ def upload_files(request):
                 if share_user.type == "p" or share_user.type == "a":
                     messages.error(request,"shared user cannot be another patient or admin")
                     return redirect('upload')
-                fileObj = File(user=user,title=title,description=description,file_path=file_path,cipher=file_pathkey)
-                fileObj.save()
-                fileObj.share.add(share_user)
-                fileObj.save()
+               
+                try:
+                    description = html.escape(description)
+                    title = html.escape(title)
+                    fileObj = File(user=user,title=title,description=description,file_path=file_path,cipher=file_pathkey)
+                    fileObj.save()
+                    fileObj.share.add(share_user)
+                    fileObj.save()
+                except:
+                  pass  
                 messages.success(request,"files has successfully shared with user:" + str(share_user.username))
                 return redirect('upload')
     return  render(request,"patient_management/uploadfile.html")         
@@ -924,12 +1082,18 @@ def change_password(request):
                 old_password = request.POST.get('oldpassword')
                 new_password = request.POST.get('newpassword')
                 confirm_password = request.POST.get('confirmpassword')
+                if old_password is None:
+                    messages.error(request,"old password is empty")
+                    return redirect('change_password')
                 if not check_password(old_password,user.password):
                     messages.error(request, "You are entering wrong password")
-                    return redirect('changepassword')
+                    return redirect('change_password')
                 elif new_password != confirm_password:
                     messages.error(request, "New password and confirm password are not same")
-                    return redirect('changepassword')
+                    return redirect('change_password')
+                if not validate_password(password=new_password):
+                    messages.error(request, "Enter Strong password")
+                    return redirect('change_password')
                 else:
                     user.set_password(new_password)
                     user.save()
@@ -1030,9 +1194,9 @@ def process_payment(request):
         'amount': '%.2f' % order.total_cost().quantize(
             Decimal('.01')),
         'item_name': 'Order {}'.format(order.id),
-        'invoice': str(500),
+        'invoice': str(random.randint(1, 100000000)),
         'currency_code': 'USD',
-        'notify_url': 'http://{}{}'.format("nik77-62429.portmap.host:62429",
+        'notify_url': 'https://{}{}'.format("tiny-lemons-share-103-25-231-102.loca.lt",
                                            reverse('paypal-ipn')),
         'return_url': 'http://{}{}'.format(host,
                                            reverse('payment_done')),

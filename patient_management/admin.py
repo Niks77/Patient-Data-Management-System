@@ -5,6 +5,12 @@ from django.contrib.admin import ModelAdmin
 
 # Register your models here.
 
+class AdminArea(admin.AdminSite):
+    def get_urls(self):
+        urls = super(AdminArea, self).get_urls()
+        # print(urls)
+        return urls
+
 class UsersAdmin(UserAdmin):
     list_display = ('email','username','last_login','is_admin', 'is_staff','is_superuser',
     'banned' , 'approved', 'password')
@@ -103,6 +109,7 @@ class PDocumentAdmin(ModelAdmin):
     fieldsets = ()
     ordering = ('user',)
 
+
 admin.site.register(models.User,UsersAdmin)
 # admin.site.register(models.Organization,OrgAdmin)
 admin.site.register(models.Product,ProductAdmin)
@@ -112,3 +119,10 @@ admin.site.register(models.File,FileAdmin)
 admin.site.register(models.HCPDocument,HCPDocumentAdmin)
 
 admin.site.register(models.PDocument,PDocumentAdmin)
+
+adminArea = AdminArea()
+adminArea.register(models.User)
+adminArea.register(models.File)
+adminArea.register(models.HCPDocument)
+adminArea.register(models.PDocument)
+# adminArea.urls
