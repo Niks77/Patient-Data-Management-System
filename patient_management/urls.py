@@ -4,13 +4,25 @@ from django.urls import path, include
 from fcs_project import settings 
 from django.conf.urls.static import static
 from . import views
+from patient_management.decorators import login
+from patient_management.admin import adminArea
+#from patidecorators import login
+admin.site.login = login(admin.site.login)
 
+admin.site.index = login(admin.site.index)
+
+#admin.site.password_change = login(admin.site.password_change)
+
+adminArea.password_change = login(adminArea.password_change)
+
+# print(admin.sites.AdminSite.get_urls())
 urlpatterns = [
+    path('admin/', admin.site.urls),
     path('', views.home, name="home"),
     path('signup',views.signup, name="signup"),
     path('signupOrg',views.signupOrg, name="signupOrg"),
     path('signin',views.signin, name="signin"),
-    path('signinOrg',views.signin, name="signin"),
+    # path('signinOrg',views.signin, name="signin"),
     path('signout',views.signout, name="signout"),
     path('changepassword',views.change_password, name="change_password"),
     path('ajax/load-dropdown/', views.load_dropdown, name='ajax_load_dropdown'),
@@ -36,6 +48,6 @@ urlpatterns = [
     path('sharefilehospital',views.upload_files_by_hospital,name='sharefilehospital')
 
 ]
-if settings.DEBUG:
-        urlpatterns += static(settings.MEDIA_URL,
+
+urlpatterns += static(settings.MEDIA_URL,
                               document_root=settings.MEDIA_ROOT)

@@ -41,6 +41,7 @@ class UserManager(BaseUserManager):
             org.type = 'r'
         org.isUser = False
         org.is_active = True
+    
         org.set_password(password)
         org.description = description
         org.location = location
@@ -67,7 +68,7 @@ class UserManager(BaseUserManager):
         elif type == "Healthcare Professional":
             user.type = 'h'
         else :
-            user.type = 'a'
+            user.type = 'p'
         user.set_password(password)
         user.name = name
         # user = self.create(username = username, name = name, email = email, password = password)
@@ -110,7 +111,7 @@ class User(AbstractBaseUser):
         ('i', 'insurance firms')
     )
     username = models.CharField(max_length = 50, unique = True,primary_key = True)
-    name = models.CharField(max_length = 150)
+    name = models.CharField(max_length = 150,blank=True,null=True)
     orgName = models.CharField(max_length = 150,blank=True, null=True)
     email = models.EmailField(max_length = 100,blank=True,null=True)
     password = models.CharField(max_length = 100)
@@ -241,15 +242,15 @@ class Order(models.Model):
 class Tokens(models.Model):
     token = models.CharField(max_length=100)
     username = models.CharField(max_length=100)
-    expire = models.DateField()
+    expire = models.PositiveBigIntegerField()
     used = models.BooleanField(default=False)
 
-class InsuranceClaim(models.Model):
-    by = models.ForeignKey('User',on_delete = models.CASCADE,related_name='UserBy')
-    to = models.ForeignKey('User',on_delete = models.CASCADE, related_name='UserTo')
-    appproved = models.BooleanField(default=False)
-    rejected = models.BooleanField(default=False)
-    file = models.ForeignKey('File', on_delete=models.CASCADE,related_name="claimfile")
+# class InsuranceClaim(models.Model):
+#     by = models.ForeignKey('User',on_delete = models.CASCADE,related_name='UserBy')
+#     to = models.ForeignKey('User',on_delete = models.CASCADE, related_name='UserTo')
+#     appproved = models.BooleanField(default=False)
+#     rejected = models.BooleanField(default=False)
+#     file = models.ForeignKey('File', on_delete=models.CASCADE,related_name="claimfile")
 
 class PharmacyOrder(models.Model):
     by = models.ForeignKey('User',on_delete = models.CASCADE, related_name='PhUserBy')

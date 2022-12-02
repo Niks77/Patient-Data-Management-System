@@ -233,8 +233,8 @@ background: rgba(0, 0, 0, 0.6);
                         <p class="item-price"> <span>{{user.description}}</span></p>
                         <form id="submitForm" action="/verify" method="post" ><input type="hidden" name="_csrf" value="7635eb83-1f95-4b32-8788-abec2724a9a4">
                         {% csrf_token %}
-                        <input type="hidden" name="username" value={{user.pk}} />
-                        <button class="btn btn-primary" type="submit">Order medicine</button>
+                        {% comment %} <input type="hidden" name="username" value={{user.pk}} /> {% endcomment %}
+                        {% comment %} <button class="btn btn-primary" type="submit">Order medicine</button> {% endcomment %}
                       </form>
                     </div>
                 </div>
@@ -288,8 +288,8 @@ background: rgba(0, 0, 0, 0.6);
                         <p class="item-price"> <span>{{user.description}}</span></p>
                         <form id="submitForm" action="/verify" method="post" ><input type="hidden" name="_csrf" value="7635eb83-1f95-4b32-8788-abec2724a9a4">
                         {% csrf_token %}
-                        <input type="hidden" name="file" value={{user.pk}} />
-                        <button class="btn btn-primary" type="submit">Claim insurance</button>
+                        {% comment %} <input type="hidden" name="file" value={{user.pk}} /> {% endcomment %}
+                        {% comment %} <button class="btn btn-primary" type="submit">Claim insurance</button> {% endcomment %}
                       </form>
                     </div>
                 </div>
