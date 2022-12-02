@@ -1,0 +1,8 @@
+dev:
+  type: http
+  region: ap
+  to: localhost:9090
+
+
+
+

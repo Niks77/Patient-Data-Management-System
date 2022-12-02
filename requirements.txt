@@ -1,0 +1,11 @@
+django
+python-decouple
+django-cors-headers
+django-rest-framework
+django-paypal
+django-recaptcha
+six
+gmpy2
+django-ratelimit
+Pillow
+mysqlclient
