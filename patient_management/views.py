@@ -93,6 +93,10 @@ def signupOrg(request):
             image2 = request.FILES['image2']
         except:
             image2 =  None
+        # print("type ",type)
+        if type is None:
+            messages.error("Please select Organization type")
+            return redirect('signupOrg')
         if username is None:
             messages.error(request, "Organization should have username")
             return redirect('signupOrg')
@@ -112,7 +116,7 @@ def signupOrg(request):
             messages.error(request, "Organization should have username")
             return redirect('signupOrg')
         if validateinput(name,50):
-            messages.error(request, "Organization should have username")
+            messages.error(request, "Organization should have name")
             return redirect('signupOrg')
         if validateinput(description,100):
             messages.error(request, "Organization should have description")
@@ -140,7 +144,7 @@ def signupOrg(request):
         if type == None:
             messages.error(request, "Please select organization type")
             return redirect('signupOrg')
-        if type != "pharmacy" and type != "hospital" and type != "insurance firms":
+        if (type != "r") and (type != "t") and (type != "i"):
             messages.error(request, "Please select valid user type")
             return redirect('signupOrg')
         if image1 == None:
@@ -162,7 +166,7 @@ def signupOrg(request):
             return redirect('signupOrg')
     
         myuser = User.objects.create_org(username,name,description,location,contactDetails,password,type)
-        
+ 
         try:
             doc = OrganizationImage(organization=myuser,image=image1)
             doc.save()
@@ -232,20 +236,28 @@ def signup(request):
             except:
                 identity =  None
             try: 
-                username = html.escape(username)
                 name = html.escape(name)
+                username = html.escape(username)
             # description = request.POST.get('description')
                 type = html.escape(type)
             except:
-                username = None
                 name = None
+                username = None
             # description = request.POST.get('description')
+                # location = None
+                # contactDetails = None
                 type = None
-            if type == "p":
-                pass
-            elif type == "h":
-                pass
-            else:
+                
+            if type is None:
+                messages.error(request, "Please select valid user type")
+                return redirect('signup')
+            if name is None:
+                messages.error(request, "Please select enter valid name")
+                return redirect('signup')
+            if username is None:
+                messages.error(request, "Please select enter valid username")
+                return redirect('signup')
+            if (type != "p") and (type != "h"):
                 messages.error(request, "Please select valid user type")
                 return redirect('signup')
             if User.objects.filter(email=email).exists():
@@ -266,23 +278,24 @@ def signup(request):
             if not validate_password(password=password):
                 messages.error(request, "Enter Strong password")
                 return redirect('signup')
+            # print("hii")
             myuser = User.objects.create_user(username,name,email,password,type)
             if(type == "p"):
-                # try:
-                doc = PDocument(user = myuser,identity_proof = identity)
-                doc.save()
-                # except:
-                #     myuser.delete()
-                #     messages.error(request, "Unknown error occured")
-                #     return redirect('signup')
+                try:
+                    doc = PDocument(user = myuser,identity_proof = identity)
+                    doc.save()
+                except:
+                    myuser.delete()
+                    messages.error(request, "Unknown error occured")
+                    return redirect('signup')
             elif(type == "h"):
-                # try:
-                doc = HCPDocument(user = myuser,identity_proof = identity, license_proof= license)
-                doc.save()
-                # except:
-                #     myuser.delete()
-                #     messages.error(request, "Unknown error occured")
-                #     return redirect('signup')
+                try:
+                    doc = HCPDocument(user = myuser,identity_proof = identity, license_proof= license)
+                    doc.save()
+                except:
+                    myuser.delete()
+                    messages.error(request, "Unknown error occured")
+                    return redirect('signup')
 
         
             messages.success(request, "Your Account has been created succesfully!! Please check your email to confirm your email address in order to activate your account.")
@@ -306,8 +319,10 @@ def signup(request):
             
             return redirect('signin')
         else:
+            # print(sigupForm.errors)
+
             messages.error(request,"Error occured")
-            return redirect('signin')
+            return redirect('signup')
     
     captchaForm = FormWithCaptcha()
 

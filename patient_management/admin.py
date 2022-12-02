@@ -8,7 +8,7 @@ from django.contrib.admin import ModelAdmin
 class AdminArea(admin.AdminSite):
     def get_urls(self):
         urls = super(AdminArea, self).get_urls()
-        print(urls)
+        # print(urls)
         return urls
 
 class UsersAdmin(UserAdmin):
@@ -125,4 +125,4 @@ adminArea.register(models.User)
 adminArea.register(models.File)
 adminArea.register(models.HCPDocument)
 adminArea.register(models.PDocument)
-adminArea.urls
+# adminArea.urls

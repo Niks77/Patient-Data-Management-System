@@ -2,6 +2,8 @@
 from django.db import models
 from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager)
 from datetime import datetime, timezone
+
+from django.core.exceptions import ValidationError
 from .validator import validate_file_size
 # Create your models here.
 
@@ -31,11 +33,11 @@ class UserManager(BaseUserManager):
             username=username,
             orgName=name
             )
-        if type == "pharmacy":
+        if type == "r":
             org.type = 'r'
-        elif type == "hospital":
+        elif type == "t":
             org.type = 't'
-        elif type == "insurance firms":
+        elif type == "i":
             org.type = 'i'
         else:#default 
             org.type = 'r'
@@ -63,9 +65,9 @@ class UserManager(BaseUserManager):
         user = self.model(
             email=self.normalize_email(email),
             username = username)
-        if type == "Patient":
+        if type == "p":
             user.type = 'p'
-        elif type == "Healthcare Professional":
+        elif type == "h":
             user.type = 'h'
         else :
             user.type = 'p'
@@ -139,6 +141,21 @@ class User(AbstractBaseUser):
     
     def has_module_perms(self, app_label):
         return True
+    
+    # def clean(self):
+    #     if (self.name is not None) and (not self.name.isalnum()):
+    #         raise ValidationError("name are incorrect")
+    #     elif (self.orgName is not None) and (not self.orgName.isalnum()):
+    #         raise ValidationError("orgName are incorrect")
+    #     elif (self.description is not None) and (not self.description.isalnum()):
+    #         raise ValidationError("description are incorrect")
+    #     elif (self.location is not None) and (not self.location.isalnum()):
+    #         raise ValidationError("location are incorrect")
+    #     elif (self.contactDetails is not None) and (not self.contactDetails.isalnum()):
+    #         raise ValidationError("contactDetails are incorrect")
+    #     elif (self.username is None) and (not self.username.isalnum()):
+    #         raise ValidationError("username are incorrect")
+        
 
 
 class Product(models.Model):
@@ -169,10 +186,12 @@ class HCPDocument(models.Model):
     user = models.ForeignKey('User',on_delete = models.CASCADE)
     identity_proof = models.FileField(upload_to='documents/',validators=[validate_file_size]) 
     license_proof = models.FileField(upload_to='documents/',validators=[validate_file_size])
+    
 
 class PDocument(models.Model):
     user = models.ForeignKey('User',on_delete = models.CASCADE)
     identity_proof = models.FileField(upload_to='documents/',validators=[validate_file_size]) 
+    
 
 
 # class Organization(AbstractBaseUser):

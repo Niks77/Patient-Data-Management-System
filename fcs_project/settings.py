@@ -68,7 +68,7 @@ ROOT_URLCONF = 'fcs_project.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ["templates"],
+        'DIRS': [os.path.join(BASE_DIR,"templates")],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -87,24 +87,24 @@ WSGI_APPLICATION = 'fcs_project.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'fcsproject',
-#         'USER': 'fcs',
-#         'PASSWORD': str(config('DATABASE_PASS')),
-#         'HOST':'localhost',
-#         'PORT':'3306',
-#     }
-# }
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': 'db.sqlite3',                      # Or path to database file if using sqlite3.
-                        # Set to empty string for default. Not used with sqlite3.
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'fcsproject',
+        'USER': 'fcs',
+        'PASSWORD': str(config('DATABASE_PASS')),
+        'HOST':'localhost',
+        'PORT':'3306',
     }
 }
+
+#DATABASES = {
+    #'default': {
+        #'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
+        #'NAME': '/home/nik/Team24_Final/db.sqlite3',                      # Or path to database file if using sqlite3.
+                        ## Set to empty string for default. Not used with sqlite3.
+    #}
+#}
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
